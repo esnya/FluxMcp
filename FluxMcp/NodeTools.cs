@@ -69,7 +69,7 @@ namespace FluxMcp
             return obj as ProtoFluxNode ?? throw new InvalidOperationException($"{reference} does not exist or is not a ProtoFluxNode");
         }
 
-        [McpServerTool(Name = "searchNodeType"), Description("TODO")]
+        [McpServerTool(Name = "searchNodeType"), Description("Searches node types in a category.")]
         public static IEnumerable<string> SearchNodeType(string category, int maxItems, int skip = 0)
         {
             return WorkerInitializer.ComponentLibrary.GetSubcategory(category).Elements.Skip(skip).Take(maxItems).Select(Types.EncodeType);
@@ -125,7 +125,7 @@ namespace FluxMcp
 
             public PackedElement(IWorldElement element)
             {
-                if (element == null) throw new ArgumentNullException(nameof(element)); // Added null check for CA1062
+                if (element == null) throw new ArgumentNullException(nameof(element));
 
                 RefId = element.ReferenceID.ToString();
                 Name = element.Name;
@@ -139,11 +139,11 @@ namespace FluxMcp
             public string RefId { get; set; }
             public string Name { get; set; }
             public string Type { get; set; }
-            public IReadOnlyCollection<PackedElement> Elements { get; } // Changed to IReadOnlyCollection for CA2227 and CA1002
+            public IReadOnlyCollection<PackedElement> Elements { get; }
 
             public PackedElementList(ISyncList list)
             {
-                if (list == null) throw new ArgumentNullException(nameof(list)); // Added null check for CA1062
+                if (list == null) throw new ArgumentNullException(nameof(list));
 
                 RefId = list.ReferenceID.ToString();
                 Name = list.Name;

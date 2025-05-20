@@ -62,6 +62,14 @@ public partial class FluxMcpMod : ResoniteMod
 #endif
     }
 
+    public override void OnEngineShutdown()
+    {
+        _server?.Stop();
+        _server = null;
+        _serverTask = null;
+        Instance = null;
+    }
+
     private static void Init(ResoniteMod modInstance)
     {
         harmony.PatchAll();

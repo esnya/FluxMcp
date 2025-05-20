@@ -24,6 +24,7 @@ namespace FluxMcp
     {
         private readonly string _url;
         private IDisposable? _listener;       // WebApp.Start が返すハンドル
+        private IHost? _host;
         private int _started;                 // 二重起動防止
 
         public bool IsRunning => Volatile.Read(ref _started) == 1;
@@ -41,10 +42,14 @@ namespace FluxMcp
 
             try
             {
-                // WebApp.Start は返り値を保持すれば即 return → ノンブロッキング
-                _listener = WebApp.Start<Startup>(_url);
+                var startup = new Startup();
+                _listener = WebApp.Start(_url, startup.Configuration);
+                _host = startup.HostInstance;
+                if (_host != null)
+                {
+                    await _host.StartAsync(token).ConfigureAwait(false);
+                }
                 ResoniteMod.Debug($"Server started at {_url}");
-                await Task.CompletedTask.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -60,6 +65,12 @@ namespace FluxMcp
 
             try
             {
+                if (_host != null)
+                {
+                    _host.StopAsync().GetAwaiter().GetResult();
+                    _host.Dispose();
+                    _host = null;
+                }
                 _listener?.Dispose();
                 _listener = null;
                 ResoniteMod.Debug("Server stopped.");
@@ -76,9 +87,10 @@ namespace FluxMcp
 
     public sealed class Startup
     {
+        public IHost? HostInstance { get; private set; }
         public (Pipe, Pipe)? PipeSet;
 
-        public void Configuration(IAppBuilder app) // Marked as static to resolve CA1822
+        public void Configuration(IAppBuilder app)
         {
             PipeSet = (new Pipe(), new Pipe());
 
@@ -92,8 +104,7 @@ namespace FluxMcp
                         PipeSet.Value.Item2.Writer.AsStream())  // outbound (MCP → HTTP)
                     ;
 
-            var host = builder.Build();
-            host.StartAsync().ConfigureAwait(false); // Added ConfigureAwait(false) to resolve CA2007
+            HostInstance = builder.Build();
 
             app.Map("/mcp", map =>
             {

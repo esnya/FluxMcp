@@ -35,6 +35,7 @@ namespace FluxMcp
 
             _isRunning = false;
             _listener.Stop();
+            _listener.Close();
         }
 
         private async Task HandleRequests()
