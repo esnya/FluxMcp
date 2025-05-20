@@ -1,44 +1,15 @@
-ProtoFlux MCP Server Mod
-========================
+# FluxMcp
 
-This project provides a simple MonkeyLoader mod implementing a prototype MCP server.
-It exposes placeholders for controlling ProtoFlux nodes in Resonite. Current features
-include basic TCP handling and an in-memory node store. Full interaction with
-Resonite will require further implementation.
+A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod for [Resonite](https://resonite.com/).
 
-Text Protocol
--------------
 
-The server uses a simple line based protocol over TCP. Each command is a single
-line with space separated arguments. A single line response is written for every
-command. Unknown commands return `error`.
+## Installation
 
-Supported commands:
+1. Install the [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader).
+1. Place the `FluxMcp.dll` from your build into your `rml_mods` folder. This folder should be located at `C:\Program Files (x86)\Steam\steamapps\common\Resonite\rml_mods` for a standard installation. You can create it if it's missing, or if you start the game once with the ResoniteModLoader installed it will create this folder for you.
+1. Launch the game. If you want to check that the mod is working you can check your Resonite logs.
 
-```
-CREATE <name> <type>
-FIND <name>
-GET_OUTPUT_DISPLAY <id>
-GET_INPUT_FIELDS <id>
-GET_OUTPUT_FIELDS <id>
-CONNECT_INPUT <id> <field> <targetId>
-CONNECT_OUTPUT <id> <field> <targetId>
-GET_CONNECTION <id> <field>
-CALL <id>
-IMPULSE <id>
-```
 
-Example
--------
+## Development Requirements
 
-```
-CREATE Counter basic
-# -> 123e4567-e89b-12d3-a456-426614174000
-FIND Counter
-# -> 123e4567-e89b-12d3-a456-426614174000:Counter
-GET_OUTPUT_DISPLAY 123e4567-e89b-12d3-a456-426614174000
-# ->
-CALL 123e4567-e89b-12d3-a456-426614174000
-# -> ok
-```
-
+For development, you will need the [ResoniteHotReloadLib](https://github.com/Nytra/ResoniteHotReloadLib) to be able to hot reload your mod with DEBUG build.

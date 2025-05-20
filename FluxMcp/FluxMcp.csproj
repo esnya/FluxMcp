@@ -1,56 +1,98 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <AssemblyTitle>FluxMcp</AssemblyTitle>
-    <RootNamespace>FluxMcp</RootNamespace>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+		<TargetFramework>net472</TargetFramework>
+		<FileAlignment>512</FileAlignment>
+		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<Deterministic>true</Deterministic>
+		<CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
+		<DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<WarningLevel>9999</WarningLevel>
+		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageId>FluxMcp</PackageId>
-    <Title>ProtoFlux MCP Server Mod</Title>
-    <Authors>Banane9</Authors>
-    <Version>0.3.0</Version>
-    <Description>Provides a prototype MCP server implementation.</Description>
-    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
-    <PackageTags>mod; mods; monkeyloader</PackageTags>
-    <PackageProjectUrl>https://github.com/placeholder/FluxMcp</PackageProjectUrl>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddExtraFilesToPackage</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
+	<PropertyGroup>
+                <RootNamespace>FluxMcp</RootNamespace>
+                <AssemblyName>FluxMcp</AssemblyName>
+                <AssemblyTitle>FluxMcp</AssemblyTitle>
+                <Title>FluxMcp</Title>
+                <Description>ProtoFlux MCP Server Mod</Description>
+                <Authors>esnya</Authors>
+                <RepositoryUrl>https://github.com/placeholder/FluxMcp</RepositoryUrl>
+                <RepositoryType>git</RepositoryType>
+                <PackageTags>Resonite,Mod,ResoniteModLoader</PackageTags>
+                <Version>0.3.0</Version>
+                <PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <EnablePackageValidation>true</EnablePackageValidation>
+	<PropertyGroup>
+                <Product>$(AssemblyTitle)</Product>
+                <Copyright>Copyright (c) 2025 $(Authors)</Copyright>
+		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<DelaySign>False</DelaySign>
+	</PropertyGroup>
 
-    <!-- Optional: Detect breaking changes from a previous stable version
-    <PackageValidationBaselineVersion>0.1.0-beta</PackageValidationBaselineVersion> -->
-  </PropertyGroup>
-
-  <Target Name="AddExtraFilesToPackage">
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="$(ProjectDir)..\FluxMcp.PrePatcher\bin\$(Configuration)\$(TargetFramework)\FluxMcp.PrePatcher.*" PackagePath="lib/$(TargetFramework)/pre-patchers/" />
-    </ItemGroup>
-  </Target>
+	<PropertyGroup Condition="'$(ResonitePath)'==''">
+		<!-- If you don't want to provide a ResonitePath in dotnet build, you can specify one here -->
+		<ResonitePath>$(MSBuildThisFileDirectory)Resonite/</ResonitePath>
+		<ResonitePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</ResonitePath>
+		<ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
+	</PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="" />
+          <None Include=".github\**\" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- MCP C# SDK and hosting dependencies -->
     <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-
-    <!-- Existing MonkeyLoader dependencies -->
-    <PackageReference Include="MonkeyLoader" Version="0.19.0-beta" />
-    <PackageReference Include="MonkeyLoader.GamePacks.Unity" Version="0.6.0-beta" />
-    <PackageReference Include="PolySharp" Version="1.14.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="9.0.5" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Reference Include="ResoniteModLoader">
+		    <HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+		    <Private>False</Private>
+		</Reference>
+		<Reference Include="HarmonyLib">
+		    <HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+		    <HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="FrooxEngine">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Elements.Core">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FluxMcp.PrePatcher\FluxMcp.PrePatcher.csproj" PrivateAssets="All" />
-  </ItemGroup>
+		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
+			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
+		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods" ContinueOnError="true" />
+	</Target>
+	<Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug'">
+		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods" Importance="high" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
+	</Target>
+	<ItemGroup>
+	  <EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
+	</ItemGroup>
 </Project>

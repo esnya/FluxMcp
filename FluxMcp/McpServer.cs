@@ -1,54 +1,68 @@
-﻿using HarmonyLib;
-using MonkeyLoader.Patching;
-using MonkeyLoader.Resonite;
-using Microsoft.Extensions.Hosting;
+using System;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ResoniteModLoader;
 
-namespace FluxMcp
+#if DEBUG
+using ResoniteHotReloadLib;
+#endif
+
+namespace FluxMcp;
+
+public partial class McpServer : ResoniteMod
 {
-    [HarmonyPatch("SomeType", "SomeMethod")]
-    [HarmonyPatchCategory(nameof(McpServer))]
-    internal sealed class McpServer : ResoniteMonkey<McpServer>
+    private static Assembly ModAssembly => typeof(McpServer).Assembly;
+
+    public override string Name => ModAssembly.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
+    public override string Author => ModAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()!.Company;
+    public override string Version => ModAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+    public override string Link => ModAssembly.GetCustomAttributes<AssemblyMetadataAttribute>().First(meta => meta.Key == "RepositoryUrl").Value;
+
+    internal static string HarmonyId => $"com.nekometer.esnya.{ModAssembly.GetName().Name}";
+
+    private static ModConfiguration? config;
+    private static readonly Harmony harmony = new(HarmonyId);
+
+    private IHost? _mcpHost;
+
+    public override void OnEngineInit()
     {
-        private IHost? _mcpHost;
+        Init(this);
 
-        protected override void OnEngineReady()
-        {
-            base.OnEngineReady();
-            var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
-            builder.Logging.AddConsole(opts => opts.LogToStandardErrorThreshold = LogLevel.Information);
-            builder.Services.AddSingleton<NodeManager>();
-            builder.Services.AddMcpServer()
-                .WithStdioServerTransport()
-                .WithToolsFromAssembly();
-            _mcpHost = builder.Build();
-            _ = _mcpHost.StartAsync();
-        }
+        var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
+        builder.Logging.AddConsole(opts => opts.LogToStandardErrorThreshold = LogLevel.Information);
+        builder.Services.AddSingleton<NodeManager>();
+        builder.Services.AddMcpServer()
+            .WithStdioServerTransport()
+            .WithToolsFromAssembly();
+        _mcpHost = builder.Build();
+        _ = _mcpHost.StartAsync();
 
-        protected override void OnShutdown(bool isReload)
-        {
-            base.OnShutdown(isReload);
-            if (_mcpHost != null)
-            {
-                _mcpHost.StopAsync().GetAwaiter().GetResult();
-                _mcpHost.Dispose();
-                _mcpHost = null;
-            }
-        }
-
-        // The options for these should be provided by your game's game pack.
-        protected override IEnumerable<IFeaturePatch> GetFeaturePatches() => Enumerable.Empty<IFeaturePatch>();
-
-        private static void Postfix()
-        {
-            Logger.Info(() => "Postfix for SomeType.SomeMethod()!");
-        }
+#if DEBUG
+        HotReloader.RegisterForHotReload(this);
+#endif
     }
+
+    private static void Init(ResoniteMod modInstance)
+    {
+        harmony.PatchAll();
+        config = modInstance?.GetConfiguration();
+    }
+
+#if DEBUG
+    public static void BeforeHotReload()
+    {
+        harmony.UnpatchAll(HarmonyId);
+    }
+
+    public static void OnHotReload(ResoniteMod modInstance)
+    {
+        Init(modInstance);
+    }
+#endif
 }
