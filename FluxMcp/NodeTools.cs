@@ -31,9 +31,9 @@ namespace FluxMcp
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.IsInstanceOfType(typeof(ProtoFluxNode)))
+            if (typeof(ProtoFluxNode).IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("The type must not be ProtoFluxNode.");
+                throw new InvalidOperationException("The type must not be ProtoFluxNode or its subclass.");
             }
 
             if (GenerateSlotNode(type, WorkspaceSlot).AttachComponent(type) is not ProtoFluxNode node)
@@ -44,11 +44,11 @@ namespace FluxMcp
             return node;
         }
 
-        private static Slot GenerateSlotNode(Type type, Slot localUserSpace)
+        private static Slot GenerateSlotNode(Type type, Slot parentSlot)
         {
-            Slot slot = localUserSpace.AddSlot(type.Name);
+            Slot slot = parentSlot.AddSlot(type.Name);
             slot.PositionInFrontOfUser();
-            slot.GlobalScale = localUserSpace.GlobalScale * float3.One;
+            slot.GlobalScale = parentSlot.GlobalScale;
             return slot;
         }
 
