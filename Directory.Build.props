@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net462</TargetFramework>
+    <AssemblyFileName>$(AssemblyTitle).dll</AssemblyFileName>
+    <LangVersion>11.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <DebugType>portable</DebugType>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+       
+    <RestoreAdditionalProjectSources>
+       https://pkg.munally.com/MonkeyModdingTroop/index.json
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>$(PackageProjectUrl).git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>False</IncludeSymbols>
+    <EmbedAllSources>True</EmbedAllSources>
+    <EmbedUntrackedSources>True</EmbedUntrackedSources>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>
