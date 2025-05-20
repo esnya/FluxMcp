@@ -35,25 +35,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- MCP C# SDK and hosting dependencies -->
+    <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+
+    <!-- Existing MonkeyLoader dependencies -->
     <PackageReference Include="MonkeyLoader" Version="0.19.0-beta" />
     <PackageReference Include="MonkeyLoader.GamePacks.Unity" Version="0.6.0-beta" />
     <PackageReference Include="PolySharp" Version="1.14.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Text.Json" Version="9.0.5" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- MCP C# SDK and hosting dependencies -->
-    <PackageReference Include="ModelContextProtocol" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Add Resonite GamePack dependency for ResoniteMonkey base -->
-    <PackageReference Include="MonkeyLoader.GamePacks.Resonite" Version="*" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MonkeyLoader.ModTemplate.PrePatcher\MonkeyLoader.ModTemplate.PrePatcher.csproj" PrivateAssets="All" />
