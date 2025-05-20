@@ -1,6 +1,10 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Net;
+using System.IO;
 using HarmonyLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,23 +32,33 @@ public partial class FluxMcpMod : ResoniteMod
     private static ModConfiguration? config;
     private static readonly Harmony harmony = new(HarmonyId);
 
-    private IHost? _mcpHost;
+
+    private static ModConfigurationKey<string> hostUrlKey = new ModConfigurationKey<string>("Host Binding URL");
+    
+
+    public static FluxMcpMod? Instance { get; private set; }
+
+    // Delegate for HotReloader registration
+    public static Action<ResoniteMod>? RegisterHotReloadAction = mod =>
+    {
+#if DEBUG
+        HotReloader.RegisterForHotReload(mod);
+#endif
+    };
+    private static McpSseServerHost? _server;
+    private static Task? _serverTask;
 
     public override void OnEngineInit()
     {
+        Instance = this; // Ensure Instance is initialized first
+
         Init(this);
 
-        var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
-        builder.Logging.AddConsole(opts => opts.LogToStandardErrorThreshold = LogLevel.Information);
-        // Removed the NodeManager registration as the class is not defined in the project.
-        builder.Services.AddMcpServer()
-            .WithStdioServerTransport()
-            .WithToolsFromAssembly();
-        _mcpHost = builder.Build();
-        _ = _mcpHost.StartAsync();
+        _server = new McpSseServerHost(config?.GetValue(hostUrlKey) ?? "http://localhost:5000/");
+        _serverTask = _server.StartAsync();
 
-#if DEBUG
-        HotReloader.RegisterForHotReload(this);
+#if !DEBUG
+        RegisterHotReloadAction?.Invoke(this);
 #endif
     }
 
@@ -57,6 +71,8 @@ public partial class FluxMcpMod : ResoniteMod
 #if DEBUG
     public static void BeforeHotReload()
     {
+        _serverTask?.Dispose();
+        _server?.Stop();
         harmony.UnpatchAll(HarmonyId);
     }
 

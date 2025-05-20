@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+    <PropertyGroup Condition="'$(ResonitePath)'==''">
+	    <!-- If you don't want to provide a ResonitePath in dotnet build, you can specify one here -->
+	    <ResonitePath>$(MSBuildThisFileDirectory)Resonite/</ResonitePath>
+	    <ResonitePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</ResonitePath>
+	    <ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common\Resonite\</ResonitePath>
+    </PropertyGroup>
+
+	<ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="MSTest" Version="3.6.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FluxMcp\FluxMcp.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ResoniteModLoader">
+			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+		</Reference>
+		<Reference Include="HarmonyLib">
+			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+			<HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Threading.Channels">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll</HintPath>
+		</Reference>
+		<Reference Include="FrooxEngine">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="ProtoFlux.Core">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="ProtoFluxBindings">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
+		</Reference>
+		<Reference Include="Elements.Core">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
+			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+</Project>

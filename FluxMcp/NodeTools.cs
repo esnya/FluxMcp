@@ -125,6 +125,8 @@ namespace FluxMcp
 
             public PackedElement(IWorldElement element)
             {
+                if (element == null) throw new ArgumentNullException(nameof(element)); // Added null check for CA1062
+
                 RefId = element.ReferenceID.ToString();
                 Name = element.Name;
                 Type = element.GetType().Name;
@@ -137,14 +139,16 @@ namespace FluxMcp
             public string RefId { get; set; }
             public string Name { get; set; }
             public string Type { get; set; }
-            public List<PackedElement> Elements { get; set; }
+            public IReadOnlyCollection<PackedElement> Elements { get; } // Changed to IReadOnlyCollection for CA2227 and CA1002
 
             public PackedElementList(ISyncList list)
             {
+                if (list == null) throw new ArgumentNullException(nameof(list)); // Added null check for CA1062
+
                 RefId = list.ReferenceID.ToString();
                 Name = list.Name;
                 Type = list.GetType().Name;
-                Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList();
+                Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList().AsReadOnly();
             }
         }
 
