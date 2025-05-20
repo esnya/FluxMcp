@@ -12,9 +12,7 @@ on:
     branches:
       - '*'          # Run the workflow for all pull requests
   
-# Sets permissions of the GITHUB_TOKEN to allow reading packages
-permissions:
-  packages: read
+permissions: read-all
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -39,8 +37,6 @@ jobs:
     # Setup environment
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Setup Dotnet
       uses: actions/setup-dotnet@v4
