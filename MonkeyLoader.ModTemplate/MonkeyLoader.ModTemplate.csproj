@@ -29,7 +29,7 @@
       <TfmSpecificPackageFile Include="$(ProjectDir)..\MonkeyLoader.ModTemplate.PrePatcher\bin\$(Configuration)\$(TargetFramework)\MonkeyLoader.ModTemplate.PrePatcher.*" PackagePath="lib/$(TargetFramework)/pre-patchers/" />
     </ItemGroup>
   </Target>
-  
+
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
@@ -42,6 +42,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MCP C# SDK and hosting dependencies -->
+    <PackageReference Include="ModelContextProtocol" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Add Resonite GamePack dependency for ResoniteMonkey base -->
+    <PackageReference Include="MonkeyLoader.GamePacks.Resonite" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
