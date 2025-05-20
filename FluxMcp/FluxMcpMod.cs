@@ -56,6 +56,7 @@ public partial class FluxMcpMod : ResoniteMod
 
         _server = new McpSseServerHost(config?.GetValue(hostUrlKey) ?? "http://localhost:5000/");
         _serverTask = _server.StartAsync();
+        _serverTask.GetAwaiter().GetResult();
 
 #if !DEBUG
         RegisterHotReloadAction?.Invoke(this);
