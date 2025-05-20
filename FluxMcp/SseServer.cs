@@ -18,14 +18,14 @@ using System.Threading.Tasks;
 namespace FluxMcp
 {
     /// <summary>
-    /// MCP SSE サーバー (OWIN Self-Host) を明示的に起動／停止するヘルパー。
+    /// Helper to explicitly start and stop the MCP SSE server (OWIN self-host).
     /// </summary>
     public sealed class McpSseServerHost : IDisposable
     {
         private readonly string _url;
-        private IDisposable? _listener;       // WebApp.Start が返すハンドル
+        private IDisposable? _listener;       // Handle returned by WebApp.Start
         private IHost? _host;
-        private int _started;                 // 二重起動防止
+        private int _started;                 // Prevents double start
 
         public bool IsRunning => Volatile.Read(ref _started) == 1;
 
@@ -34,7 +34,7 @@ namespace FluxMcp
             _url = url.EndsWith("/") ? url : url + "/";
         }
 
-        /// <summary>非同期 (ノンブロッキング) でサーバーを起動。</summary>
+        /// <summary>Start the server asynchronously.</summary>
         public async Task StartAsync(CancellationToken token = default)
         {
             if (Interlocked.Exchange(ref _started, 1) == 1)
@@ -58,7 +58,7 @@ namespace FluxMcp
             }
         }
 
-        /// <summary>即時停止。再利用したい場合は StartAsync を再度呼び出す。</summary>
+        /// <summary>Stop immediately; call StartAsync again to reuse.</summary>
         public void Stop()
         {
             if (Interlocked.Exchange(ref _started, 0) == 0) return;
@@ -117,11 +117,11 @@ namespace FluxMcp
                     res.Headers.Set("Cache-Control", "no-cache");
                     res.Headers.Set("Access-Control-Allow-Origin", "*");
 
-                    // SSE クライアントへ最初に endpoint 通知
+                    // Notify the SSE client of the endpoint first
                     await res.WriteAsync("event: endpoint\ndata: /message\n\n").ConfigureAwait(false);
                     await res.Body.FlushAsync().ConfigureAwait(false);
 
-                    // ② MCP → HTTP 方向のストリームを読み取り ⇒ SSE へ流す
+                    // Forward the MCP to HTTP stream into SSE
                     using var reader = new StreamReader(PipeSet.Value.Item2.Reader.AsStream());
                     _ = Task.Run(async () =>
                     {
@@ -130,7 +130,7 @@ namespace FluxMcp
                             string? line = await reader.ReadLineAsync().ConfigureAwait(false);
                             if (line == null) break;
 
-                            // ここでは 1 行＝1 JSON-RPC 返信 という想定
+                            // Each line is expected to be one JSON-RPC response
                             await res.WriteAsync($"data: {line}\n\n").ConfigureAwait(false);
                             await res.Body.FlushAsync().ConfigureAwait(false);
                         }
@@ -152,11 +152,11 @@ namespace FluxMcp
                 map.Run(async ctx =>
                 {
                     string json = await new StreamReader(ctx.Request.Body).ReadToEndAsync().ConfigureAwait(false);
-                    // ③ HTTP から届いた JSON を duplexPipe に書き込むだけ
+                    // Write JSON from HTTP into the duplex pipe
                     byte[] bytes = Encoding.UTF8.GetBytes(json + "\n");
                     await PipeSet.Value.Item1.Writer.WriteAsync(bytes, ctx.Request.CallCancelled).ConfigureAwait(false);
 
-                    // ここでは即 202 Accepted を返す（返答は SSE 側で受信)
+                    // Immediately return 202 Accepted; response arrives via SSE
                     ctx.Response.StatusCode = 202;
                 });
             });
