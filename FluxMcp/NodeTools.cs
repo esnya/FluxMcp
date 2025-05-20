@@ -2,58 +2,318 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using Elements.Core;
+using FrooxEngine;
+using FrooxEngine.ProtoFlux;
+using System.Linq;
 
 namespace FluxMcp
 {
     [McpServerToolType]
     public static class NodeTools
     {
+        private static World FocusedWorld => Engine.Current.WorldManager.FocusedWorld;
+        private static TypeManager Types => FocusedWorld.Types;
+        private static Slot LocalUserSpace => FocusedWorld.LocalUserSpace;
+        private static Slot WorkspaceSlot => FocusedWorld.RootSlot.GetChildrenWithTag("__FLUXMCP_WORKSPACE__").Append(LocalUserSpace).First();
+
+
         [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type.")]
-        public static Guid CreateNode(NodeManager manager, string name, string type)
+        public static NodeInfo CreateNode(string type)
         {
-            var node = manager.CreateNode(name, type);
-            return node.Id;
+            return NodeInfo.Encode(CreateNodeInternal(Types.DecodeType(type)));
         }
 
-        [McpServerTool(Name = "findNodes"), Description("Finds nodes whose names contain the specified substring.")]
-        public static IEnumerable<NodeInfo> FindNodes(NodeManager manager, string name)
+        private static ProtoFluxNode CreateNodeInternal(Type type)
         {
-            foreach (var node in manager.FindNodes(name))
-                yield return new NodeInfo(node.Id, node.Name, node.Type);
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsInstanceOfType(typeof(ProtoFluxNode)))
+            {
+                throw new InvalidOperationException("The type must not be ProtoFluxNode.");
+            }
+
+            if (GenerateSlotNode(type, WorkspaceSlot).AttachComponent(type) is not ProtoFluxNode node)
+            {
+                throw new InvalidOperationException("Failed to create a ProtoFluxNode.");
+            }
+
+            return node;
         }
 
-        [McpServerTool(Name = "getOutputDisplay"), Description("Gets the output display for the specified node.")]
-        public static string GetOutputDisplay(NodeManager manager, Guid nodeId) =>
-            manager.GetOutputDisplay(nodeId) ?? string.Empty;
+        private static Slot GenerateSlotNode(Type type, Slot localUserSpace)
+        {
+            Slot slot = localUserSpace.AddSlot(type.Name);
+            slot.PositionInFrontOfUser();
+            slot.GlobalScale = localUserSpace.GlobalScale * float3.One;
+            return slot;
+        }
 
-        [McpServerTool(Name = "getInputFields"), Description("Gets the input fields for the specified node.")]
-        public static IReadOnlyList<string> GetInputFields(NodeManager manager, Guid nodeId) =>
-            manager.GetInputFields(nodeId);
+        [McpServerTool(Name = "findNode"), Description("Finds a node by its reference ID.")]
+        public static NodeInfo FindNode(string reference)
+        {
+            return NodeInfo.Encode(FindNodeInternal(reference));
+        }
 
-        [McpServerTool(Name = "getOutputFields"), Description("Gets the output fields for the specified node.")]
-        public static IReadOnlyList<string> GetOutputFields(NodeManager manager, Guid nodeId) =>
-            manager.GetOutputFields(nodeId);
+        private static ProtoFluxNode FindNodeInternal(string reference)
+        {
+            if (!RefID.TryParse(reference, out var refID))
+            {
+                throw new ArgumentException("Invalid RefID format.", nameof(reference));
+            }
 
-        [McpServerTool(Name = "connectInput"), Description("Connects an input field of a node to a target node.")]
-        public static void ConnectInput(NodeManager manager, Guid nodeId, string inputField, Guid targetNodeId) =>
-            manager.ConnectInput(nodeId, inputField, targetNodeId);
+            var obj = FocusedWorld.ReferenceController.GetObjectOrNull(refID);
+            return obj as ProtoFluxNode ?? throw new InvalidOperationException($"{reference} does not exist or is not a ProtoFluxNode");
+        }
 
-        [McpServerTool(Name = "connectOutput"), Description("Connects an output field of a node to a target node.")]
-        public static void ConnectOutput(NodeManager manager, Guid nodeId, string outputField, Guid targetNodeId) =>
-            manager.ConnectOutput(nodeId, outputField, targetNodeId);
+        [McpServerTool(Name = "searchNodeType"), Description("TODO")]
+        public static IEnumerable<string> SearchNodeType(string category, int maxItems, int skip = 0)
+        {
+            return WorkerInitializer.ComponentLibrary.GetSubcategory(category).Elements.Skip(skip).Take(maxItems).Select(Types.EncodeType);
+        }
 
-        [McpServerTool(Name = "getConnection"), Description("Gets the current connection for the specified node field.")]
-        public static Guid? GetConnection(NodeManager manager, Guid nodeId, string field) =>
-            manager.GetCurrentConnection(nodeId, field);
+        [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
+        public static void DeleteNode(string nodeRefId)
+        {
+            FindNodeInternal(nodeRefId).Slot.Destroy();
+        }
 
-        [McpServerTool(Name = "triggerCall"), Description("Increments the call count for the specified node.")]
-        public static void TriggerCall(NodeManager manager, Guid nodeId) =>
-            manager.TriggerCall(nodeId);
+        [McpServerTool(Name = "tryConnectInput"), Description("Attempts to connect an input to an output.")]
+        public static bool TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            var outputNode = FindNodeInternal(outputNodeRefId);
 
-        [McpServerTool(Name = "triggerDynamicImpulse"), Description("Increments the impulse count for the specified node.")]
-        public static void TriggerDynamicImpulse(NodeManager manager, Guid nodeId) =>
-            manager.TriggerDynamicImpulse(nodeId);
+            var input = node.GetInput(inputIndex);
+            var output = outputNode.GetOutput(outputIndex);
+
+            return node.TryConnectInput(input, output, allowExplicitCast: true, undoable: true);
+        }
+
+        [McpServerTool(Name = "tryConnectImpulse"), Description("Attempts to connect an impulse to an operation.")]
+        public static bool TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            var operationNode = FindNodeInternal(operationNodeRefId);
+
+            var impulse = node.GetImpulse(impulseIndex);
+            var operation = operationNode.GetOperation(operationIndex);
+
+            return node.TryConnectImpulse(impulse, operation, undoable: true);
+        }
+
+        [McpServerTool(Name = "tryConnectReference"), Description("Attempts to connect a reference to another node.")]
+        public static bool TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            var targetNode = FindNodeInternal(targetNodeRefId);
+
+            var reference = node.GetReference(referenceIndex);
+
+            return node.TryConnectReference(reference, targetNode, undoable: true);
+        }
+
+        public class PackedElement
+        {
+            public string RefId { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public string? ParentRefId { get; set; }
+
+            public PackedElement(IWorldElement element)
+            {
+                RefId = element.ReferenceID.ToString();
+                Name = element.Name;
+                Type = element.GetType().Name;
+                ParentRefId = element.Parent?.ReferenceID.ToString();
+            }
+        }
+
+        public class PackedElementList
+        {
+            public string RefId { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public List<PackedElement> Elements { get; set; }
+
+            public PackedElementList(ISyncList list)
+            {
+                RefId = list.ReferenceID.ToString();
+                Name = list.Name;
+                Type = list.GetType().Name;
+                Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList();
+            }
+        }
+
+        private static PackedElement PackNodeElement(IWorldElement element)
+        {
+            return new PackedElement(element);
+        }
+
+        private static PackedElementList PackNodeElementList(ISyncList list)
+        {
+            return new PackedElementList(list);
+        }
+
+        [McpServerTool(Name = "getNodeOutput"), Description("Gets the output of a node by index.")]
+        public static object GetNodeOutput(string nodeRefId, int outputIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetOutput(outputIndex));
+        }
+
+        [McpServerTool(Name = "getNodeInput"), Description("Gets the input of a node by index.")]
+        public static object GetNodeInput(string nodeRefId, int inputIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetInput(inputIndex));
+        }
+
+        [McpServerTool(Name = "getNodeImpulse"), Description("Gets the impulse of a node by index.")]
+        public static object GetNodeImpulse(string nodeRefId, int impulseIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetImpulse(impulseIndex));
+        }
+
+        [McpServerTool(Name = "getNodeOperation"), Description("Gets the operation of a node by index.")]
+        public static object GetNodeOperation(string nodeRefId, int operationIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetOperation(operationIndex));
+        }
+
+        [McpServerTool(Name = "getNodeReference"), Description("Gets the reference of a node by index.")]
+        public static object GetNodeReference(string nodeRefId, int referenceIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetReference(referenceIndex));
+        }
+
+        [McpServerTool(Name = "getNodeInputList"), Description("Gets the input list of a node by index.")]
+        public static object GetNodeInputList(string nodeRefId, int inputListIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElementList(node.GetInputList(inputListIndex));
+        }
+
+        [McpServerTool(Name = "getNodeOutputList"), Description("Gets the output list of a node by index.")]
+        public static object GetNodeOutputList(string nodeRefId, int outputListIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElementList(node.GetOutputList(outputListIndex));
+        }
+
+        [McpServerTool(Name = "getNodeImpulseList"), Description("Gets the impulse list of a node by index.")]
+        public static object GetNodeImpulseList(string nodeRefId, int impulseListIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElementList(node.GetImpulseList(impulseListIndex));
+        }
+
+        [McpServerTool(Name = "getNodeOperationList"), Description("Gets the operation list of a node by index.")]
+        public static object GetNodeOperationList(string nodeRefId, int operationListIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElementList(node.GetOperationList(operationListIndex));
+        }
+
+        [McpServerTool(Name = "getNodeGlobalRef"), Description("Gets the global reference of a node by index.")]
+        public static object GetNodeGlobalRef(string nodeRefId, int globalRefIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElement(node.GetGlobalRef(globalRefIndex));
+        }
+
+        [McpServerTool(Name = "getNodeGlobalRefList"), Description("Gets the global reference list of a node by index.")]
+        public static object GetNodeGlobalRefList(string nodeRefId, int globalRefListIndex)
+        {
+            var node = FindNodeInternal(nodeRefId);
+            return PackNodeElementList(node.GetGlobalRefList(globalRefListIndex));
+        }
+
+        [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
+        public static PackedElement GetWorldElement(string refId)
+        {
+            if (!RefID.TryParse(refId, out var parsedRefId))
+            {
+                throw new ArgumentException("Invalid RefID format.", nameof(refId));
+            }
+
+            var element = FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId);
+            if (element == null)
+            {
+                throw new InvalidOperationException($"No element found with RefID: {refId}");
+            }
+
+            return new PackedElement(element);
+        }
     }
 
-    public record NodeInfo(Guid id, string name, string type);
+    public class NodeInfo
+    {
+        public string RefId { get; set; }
+        public string NodeType { get; set; }
+        public string NodeName { get; set; }
+        public int NodeInputCount { get; set; }
+        public int NodeInputListCount { get; set; }
+        public int NodeOutputCount { get; set; }
+        public int NodeOutputListCount { get; set; }
+        public int NodeImpulseCount { get; set; }
+        public int NodeImpulseListCount { get; set; }
+        public int NodeOperationCount { get; set; }
+        public int NodeOperationListCount { get; set; }
+        public int NodeReferenceCount { get; set; }
+        public int NodeGlobalRefCount { get; set; }
+        public int NodeGlobalRefListCount { get; set; }
+
+        public NodeInfo(string refId, string nodeType, string nodeName, int nodeInputCount, int nodeInputListCount,
+                        int nodeOutputCount, int nodeOutputListCount, int nodeImpulseCount, int nodeImpulseListCount,
+                        int nodeOperationCount, int nodeOperationListCount, int nodeReferenceCount,
+                        int nodeGlobalRefCount, int nodeGlobalRefListCount)
+        {
+            RefId = refId;
+            NodeType = nodeType;
+            NodeName = nodeName;
+            NodeInputCount = nodeInputCount;
+            NodeInputListCount = nodeInputListCount;
+            NodeOutputCount = nodeOutputCount;
+            NodeOutputListCount = nodeOutputListCount;
+            NodeImpulseCount = nodeImpulseCount;
+            NodeImpulseListCount = nodeImpulseListCount;
+            NodeOperationCount = nodeOperationCount;
+            NodeOperationListCount = nodeOperationListCount;
+            NodeReferenceCount = nodeReferenceCount;
+            NodeGlobalRefCount = nodeGlobalRefCount;
+            NodeGlobalRefListCount = nodeGlobalRefListCount;
+        }
+
+        public static NodeInfo Encode(ProtoFluxNode node)
+        {
+            if (node is null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            return new NodeInfo(
+                node.ReferenceID.ToString(),
+                node.World.Types.EncodeType(node.GetType()),
+                node.Name,
+                node.NodeInputCount,
+                node.NodeInputListCount,
+                node.NodeOutputCount,
+                node.NodeOutputListCount,
+                node.NodeImpulseCount,
+                node.NodeImpulseListCount,
+                node.NodeOperationCount,
+                node.NodeOperationListCount,
+                node.NodeReferenceCount,
+                node.NodeGlobalRefCount,
+                node.NodeGlobalRefListCount
+            );
+        }
+    }
 }

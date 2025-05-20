@@ -14,9 +14,9 @@ using ResoniteHotReloadLib;
 
 namespace FluxMcp;
 
-public partial class McpServer : ResoniteMod
+public partial class FluxMcpMod : ResoniteMod
 {
-    private static Assembly ModAssembly => typeof(McpServer).Assembly;
+    private static Assembly ModAssembly => typeof(FluxMcpMod).Assembly;
 
     public override string Name => ModAssembly.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
     public override string Author => ModAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()!.Company;
@@ -36,7 +36,7 @@ public partial class McpServer : ResoniteMod
 
         var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
         builder.Logging.AddConsole(opts => opts.LogToStandardErrorThreshold = LogLevel.Information);
-        builder.Services.AddSingleton<NodeManager>();
+        // Removed the NodeManager registration as the class is not defined in the project.
         builder.Services.AddMcpServer()
             .WithStdioServerTransport()
             .WithToolsFromAssembly();

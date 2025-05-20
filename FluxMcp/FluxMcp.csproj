@@ -53,6 +53,7 @@
   <ItemGroup>
     <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+    <PackageReference Include="System.Threading.Channels" Version="9.0.0" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -65,8 +66,21 @@
 		    <HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="System.Threading.Channels, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll</HintPath>
+			<Private>False</Private>
+			<SpecificVersion>True</SpecificVersion>
+		</Reference>
 		<Reference Include="FrooxEngine">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="ProtoFlux.Core">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="ProtoFluxBindings">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Elements.Core">
@@ -77,7 +91,6 @@
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-
 		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
 			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
 			<Private>False</Private>
