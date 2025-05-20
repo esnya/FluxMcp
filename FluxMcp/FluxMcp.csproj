@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyTitle>MonkeyLoader.ModTemplate</AssemblyTitle>
-    <RootNamespace>MonkeyLoader.ModTemplate</RootNamespace>
+    <AssemblyTitle>FluxMcp</AssemblyTitle>
+    <RootNamespace>FluxMcp</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageId>MonkeyLoader.ModTemplate</PackageId>
-    <Title>MonkeyLoader Mod Template</Title>
+    <PackageId>FluxMcp</PackageId>
+    <Title>ProtoFlux MCP Server Mod</Title>
     <Authors>Banane9</Authors>
     <Version>0.3.0</Version>
-    <Description>This is a template for a MonkeyLoader mod.</Description>
+    <Description>Provides a prototype MCP server implementation.</Description>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageTags>mod; mods; monkeyloader</PackageTags>
-    <PackageProjectUrl>https://github.com/MonkeyModdingTroop/MonkeyLoader.ModTemplate</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/placeholder/FluxMcp</PackageProjectUrl>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddExtraFilesToPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
@@ -26,7 +26,7 @@
 
   <Target Name="AddExtraFilesToPackage">
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(ProjectDir)..\MonkeyLoader.ModTemplate.PrePatcher\bin\$(Configuration)\$(TargetFramework)\MonkeyLoader.ModTemplate.PrePatcher.*" PackagePath="lib/$(TargetFramework)/pre-patchers/" />
+      <TfmSpecificPackageFile Include="$(ProjectDir)..\FluxMcp.PrePatcher\bin\$(Configuration)\$(TargetFramework)\FluxMcp.PrePatcher.*" PackagePath="lib/$(TargetFramework)/pre-patchers/" />
     </ItemGroup>
   </Target>
 
@@ -51,6 +51,6 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\MonkeyLoader.ModTemplate.PrePatcher\MonkeyLoader.ModTemplate.PrePatcher.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\FluxMcp.PrePatcher\FluxMcp.PrePatcher.csproj" PrivateAssets="All" />
   </ItemGroup>
 </Project>

@@ -11,11 +11,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonkeyLoader.ModTemplate
+namespace FluxMcp
 {
     [HarmonyPatch("SomeType", "SomeMethod")]
-    [HarmonyPatchCategory(nameof(BasicPatcher))]
-    internal sealed class BasicPatcher : ResoniteMonkey<BasicPatcher>
+    [HarmonyPatchCategory(nameof(McpServer))]
+    internal sealed class McpServer : ResoniteMonkey<McpServer>
     {
         private IHost? _mcpHost;
 

@@ -2,15 +2,17 @@
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
+using MonkeyLoader;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonkeyLoader.ModTemplate
+namespace FluxMcp
 {
-    internal sealed class BasicPrePatcher : ConfiguredEarlyMonkey<BasicPrePatcher, MyConfig>
+    internal sealed class PrePatcher : ConfiguredEarlyMonkey<PrePatcher, PrePatcherConfig>
     {
         public static void HelloMethod()
             => Logger.Info(() => $"Hello {ConfigSection.TargetName} from pre-patched-in SomeNameSpace.SomeType static constructor!");
@@ -20,7 +22,7 @@ namespace MonkeyLoader.ModTemplate
 
         protected override IEnumerable<PrePatchTarget> GetPrePatchTargets()
         {
-            yield return new PrePatchTarget(new AssemblyName("Assembly-CSharp"), "SomeNameSpace.SomeType");
+            yield return new PrePatchTarget(new MonkeyLoader.AssemblyName("Assembly-CSharp"), "SomeNameSpace.SomeType");
         }
 
         protected override bool Patch(PatchJob patchJob)
@@ -29,7 +31,7 @@ namespace MonkeyLoader.ModTemplate
             var engineCCtor = engine.GetStaticConstructor();
 
             var processor = engineCCtor.Body.GetILProcessor(); // using MonoMod.Utils; is important for this to work v
-            processor.InsertBefore(engineCCtor.Body.Instructions.First(), processor.Create(OpCodes.Call, typeof(BasicPrePatcher).GetMethod(nameof(HelloMethod))));
+            processor.InsertBefore(engineCCtor.Body.Instructions.First(), processor.Create(OpCodes.Call, typeof(PrePatcher).GetMethod(nameof(HelloMethod))));
 
             patchJob.Changes = true;
             return true;

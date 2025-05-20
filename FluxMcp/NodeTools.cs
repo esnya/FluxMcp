@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 
-namespace MonkeyLoader.ModTemplate
+namespace FluxMcp
 {
     [McpServerToolType]
     public static class NodeTools

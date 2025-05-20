@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace MonkeyLoader.ModTemplate
+namespace FluxMcp
 {
     public class NodeManager
     {

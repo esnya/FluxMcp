@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyTitle>MonkeyLoader.ModTemplate.PrePatcher</AssemblyTitle>
-    <RootNamespace>MonkeyLoader.ModTemplate</RootNamespace>
+    <AssemblyTitle>FluxMcp.PrePatcher</AssemblyTitle>
+    <RootNamespace>FluxMcp</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>

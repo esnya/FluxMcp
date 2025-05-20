@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonkeyLoader.ModTemplate
+namespace FluxMcp
 {
-    internal sealed class MyConfig : ConfigSection
+    internal sealed class PrePatcherConfig : ConfigSection
     {
         private readonly DefiningConfigKey<string> _targetNameKey = new("TargetName", "Your name.", () => "World");
 
