@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -27,23 +29,78 @@ internal sealed class ProtoFluxMcpServer
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var client = await _listener.AcceptTcpClientAsync(cancellationToken);
+            var client = await _listener.AcceptTcpClientAsync();
             _ = Task.Run(() => HandleClientAsync(client, cancellationToken), cancellationToken);
         }
     }
 
-    private static async Task HandleClientAsync(TcpClient client, CancellationToken cancellationToken)
+    private async Task HandleClientAsync(TcpClient client, CancellationToken cancellationToken)
     {
-        await using var stream = client.GetStream();
+        using var stream = client.GetStream();
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        await using var writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+        using var writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
         while (!cancellationToken.IsCancellationRequested && client.Connected)
         {
             var line = await reader.ReadLineAsync();
             if (line == null) break;
-            // TODO: Parse and execute MCP commands.
-            await writer.WriteLineAsync("ok");
+
+            var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                continue;
+
+            var cmd = parts[0].ToUpperInvariant();
+            var response = "ok";
+
+            try
+            {
+                switch (cmd)
+                {
+                    case "CREATE" when parts.Length >= 3:
+                        var node = CreateNode(parts[1], parts[2]);
+                        response = node.Id.ToString();
+                        break;
+                    case "FIND" when parts.Length >= 2:
+                        var found = FindNodes(parts[1]);
+                        response = string.Join(",", found.Select(n => $"{n.Id}:{n.Name}"));
+                        break;
+                    case "GET_OUTPUT_DISPLAY" when parts.Length >= 2:
+                        var od = GetOutputDisplay(Guid.Parse(parts[1]));
+                        response = od ?? string.Empty;
+                        break;
+                    case "GET_INPUT_FIELDS" when parts.Length >= 2:
+                        response = string.Join(",", GetInputFields(Guid.Parse(parts[1])));
+                        break;
+                    case "GET_OUTPUT_FIELDS" when parts.Length >= 2:
+                        response = string.Join(",", GetOutputFields(Guid.Parse(parts[1])));
+                        break;
+                    case "CONNECT_INPUT" when parts.Length >= 4:
+                        ConnectInput(Guid.Parse(parts[1]), parts[2], Guid.Parse(parts[3]));
+                        break;
+                    case "CONNECT_OUTPUT" when parts.Length >= 4:
+                        ConnectOutput(Guid.Parse(parts[1]), parts[2], Guid.Parse(parts[3]));
+                        break;
+                    case "GET_CONNECTION" when parts.Length >= 3:
+                        var conn = GetCurrentConnection(Guid.Parse(parts[1]), parts[2]);
+                        response = conn?.ToString() ?? string.Empty;
+                        break;
+                    case "CALL" when parts.Length >= 2:
+                        TriggerCall(Guid.Parse(parts[1]));
+                        break;
+                    case "IMPULSE" when parts.Length >= 2:
+                        TriggerDynamicImpulse(Guid.Parse(parts[1]));
+                        break;
+                    default:
+                        response = "error";
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                response = "error " + ex.Message;
+            }
+
+            await writer.WriteLineAsync(response);
         }
     }
 
@@ -64,14 +121,51 @@ internal sealed class ProtoFluxMcpServer
     }
 
     // The following methods are placeholders for future implementation.
-    public string? GetOutputDisplay(Guid nodeId) => _nodes.TryGetValue(nodeId, out var node) ? node.OutputDisplay : null;
-    public IReadOnlyList<string> GetInputFields(Guid nodeId) => _nodes.TryGetValue(nodeId, out var node) ? node.InputFields : Array.Empty<string>();
-    public IReadOnlyList<string> GetOutputFields(Guid nodeId) => _nodes.TryGetValue(nodeId, out var node) ? node.OutputFields : Array.Empty<string>();
-    public void ConnectInput(Guid nodeId, string inputField, Guid targetNodeId) { /* TODO */ }
-    public void ConnectOutput(Guid nodeId, string outputField, Guid targetNodeId) { /* TODO */ }
-    public Guid? GetCurrentConnection(Guid nodeId, string field) => null; // TODO
-    public void TriggerCall(Guid nodeId) { /* TODO */ }
-    public void TriggerDynamicImpulse(Guid nodeId) { /* TODO */ }
+    public string? GetOutputDisplay(Guid nodeId) =>
+        _nodes.TryGetValue(nodeId, out var node) ? node.OutputDisplay : null;
+
+    public IReadOnlyList<string> GetInputFields(Guid nodeId) =>
+        _nodes.TryGetValue(nodeId, out var node) ? node.InputFields : Array.Empty<string>();
+
+    public IReadOnlyList<string> GetOutputFields(Guid nodeId) =>
+        _nodes.TryGetValue(nodeId, out var node) ? node.OutputFields : Array.Empty<string>();
+
+    public void ConnectInput(Guid nodeId, string inputField, Guid targetNodeId)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+            node.InputConnections[inputField] = targetNodeId;
+    }
+
+    public void ConnectOutput(Guid nodeId, string outputField, Guid targetNodeId)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+            node.OutputConnections[outputField] = targetNodeId;
+    }
+
+    public Guid? GetCurrentConnection(Guid nodeId, string field)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+        {
+            if (node.InputConnections.TryGetValue(field, out var t))
+                return t;
+            if (node.OutputConnections.TryGetValue(field, out t))
+                return t;
+        }
+
+        return null;
+    }
+
+    public void TriggerCall(Guid nodeId)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+            node.CallCount++;
+    }
+
+    public void TriggerDynamicImpulse(Guid nodeId)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+            node.ImpulseCount++;
+    }
 }
 
 internal sealed class ProtoFluxNode
@@ -91,5 +185,11 @@ internal sealed class ProtoFluxNode
     public string OutputDisplay { get; set; } = string.Empty;
     public List<string> InputFields { get; } = new();
     public List<string> OutputFields { get; } = new();
+
+    public Dictionary<string, Guid> InputConnections { get; } = new();
+    public Dictionary<string, Guid> OutputConnections { get; } = new();
+
+    public int CallCount { get; set; }
+    public int ImpulseCount { get; set; }
 }
 
