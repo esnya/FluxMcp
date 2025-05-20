@@ -71,7 +71,6 @@ public partial class FluxMcpMod : ResoniteMod
 #if DEBUG
     public static void BeforeHotReload()
     {
-        _serverTask?.Dispose();
         _server?.Stop();
         harmony.UnpatchAll(HarmonyId);
     }
