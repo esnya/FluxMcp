@@ -98,14 +98,21 @@
 		</Reference>
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
-		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods" ContinueOnError="true" />
-	</Target>
-	<Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug'">
-		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods" Importance="high" />
-		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
-	</Target>
+        <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
+                <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
+                <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods" ContinueOnError="true" />
+        </Target>
+        <Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug'">
+                <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods" Importance="high" />
+                <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
+        </Target>
+        <Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
+                <ItemGroup>
+                        <NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' and !'%(FileName)'.StartsWith('System.')" />
+                </ItemGroup>
+                <Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
+                <Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
+        </Target>
 	<ItemGroup>
 	  <EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
 	</ItemGroup>
