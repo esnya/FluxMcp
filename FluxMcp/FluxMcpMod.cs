@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using HarmonyLib;
 using ResoniteModLoader;
 
 #if DEBUG
@@ -23,15 +22,14 @@ public partial class FluxMcpMod : ResoniteMod
     internal static string HarmonyId => $"com.nekometer.esnya.{ModAssembly.GetName().Name}";
 
     private static ModConfiguration? _config;
-    private static readonly Harmony _harmony = new(HarmonyId); // Made read-only to resolve IDE0044
 
+    [AutoRegisterConfigKey]
+    private static readonly ModConfigurationKey<string> _bindAddressKey = new ModConfigurationKey<string>("Bind adderess", computeDefault:  () => "127.0.0.1");
 
-    private static readonly ModConfigurationKey<string> _hostUrlKey = new ModConfigurationKey<string>("Host Binding URL");
+    [AutoRegisterConfigKey]
+    private static readonly ModConfigurationKey<int> _portKey = new ModConfigurationKey<int>("Listen port", computeDefault: () => 5000);
     
 
-    public static FluxMcpMod? Instance { get; private set; } // Resolved CA2211 by making Instance private set
-
-    // Delegate for HotReloader registration
     public Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
     {
 #if DEBUG
@@ -39,43 +37,28 @@ public partial class FluxMcpMod : ResoniteMod
 #endif
     };
 
-    private static McpSseServerHost? _server;
-    private static Task? _serverTask;
+    private static TcpTransport? _tcpServer;
 
     public override void OnEngineInit()
     {
-        Instance = this; // Ensure Instance is initialized first
-
         Init(this);
-
-        _server = new McpSseServerHost(new Uri(_config?.GetValue(_hostUrlKey) ?? "http://localhost:5000/", UriKind.Absolute)); // Ensured proper Uri conversion
-        _serverTask = _server.StartAsync();
-        _serverTask.GetAwaiter().GetResult();
-
 #if DEBUG
         RegisterHotReloadAction?.Invoke(this);
 #endif
     }
 
-    public static void Shotdown() // Marked as static to resolve CA1822
-    {
-        _server?.Stop();
-        _server = null;
-        _serverTask = null;
-        Instance = null;
-    }
-
     private static void Init(ResoniteMod modInstance)
     {
-        _harmony.PatchAll();
         _config = modInstance?.GetConfiguration();
+        Debug("Starting TCP server...");
+        _tcpServer = new TcpTransport(_config?.GetValue(_bindAddressKey) ?? "127.0.0.1", _config?.GetValue(_portKey) ?? 5000);
+        Task.Run(() => _tcpServer.StartAsync(default));
     }
 
 #if DEBUG
     public static void BeforeHotReload()
     {
-        _server?.Stop();
-        _harmony.UnpatchAll(HarmonyId);
+        _tcpServer?.Stop();
     }
 
     public static void OnHotReload(ResoniteMod modInstance)

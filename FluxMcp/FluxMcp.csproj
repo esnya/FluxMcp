@@ -51,25 +51,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.2" />
-		<PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.2" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
 		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+		<PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
+		<PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="ResoniteModLoader">
 			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="HarmonyLib">
-			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
-			<HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="System.Threading.Channels">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="FrooxEngine">
@@ -86,10 +80,6 @@
 		</Reference>
 		<Reference Include="Elements.Core">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
@@ -115,8 +105,8 @@
 		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
 	</Target>
 	<PropertyGroup>
-		<!-- 指定するDLL名をセミコロン区切りで列挙 -->
-		<DllsToCopy>Microsoft.Owin.dll;Microsoft.Extensions.Hosting.Abstractions.dll;ModelContextProtocol.dll;Microsoft.Owin.Hosting.dll;Microsoft.Owin.Host.HttpListener.dll;Microsoft.Extensions.Hosting.dll;Microsoft.Extensions.Diagnostics.Abstractions.dll;Microsoft.Extensions.Configuration.dll</DllsToCopy>
+			<!-- Removed Microsoft.Owin.dll and Microsoft.Owin.Hosting.dll -->
+		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Extensions.DependencyInjection</DllsToCopy>
 	</PropertyGroup>
 	<ItemGroup>
 		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
