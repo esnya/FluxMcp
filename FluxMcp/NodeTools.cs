@@ -116,42 +116,6 @@ namespace FluxMcp
             return node.TryConnectReference(reference, targetNode, undoable: true);
         }
 
-        public class PackedElement
-        {
-            public string RefId { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public string? ParentRefId { get; set; }
-
-            public PackedElement(IWorldElement element)
-            {
-                if (element == null) throw new ArgumentNullException(nameof(element));
-
-                RefId = element.ReferenceID.ToString();
-                Name = element.Name;
-                Type = element.GetType().Name;
-                ParentRefId = element.Parent?.ReferenceID.ToString();
-            }
-        }
-
-        public class PackedElementList
-        {
-            public string RefId { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public IReadOnlyCollection<PackedElement> Elements { get; }
-
-            public PackedElementList(ISyncList list)
-            {
-                if (list == null) throw new ArgumentNullException(nameof(list));
-
-                RefId = list.ReferenceID.ToString();
-                Name = list.Name;
-                Type = list.GetType().Name;
-                Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList().AsReadOnly();
-            }
-        }
-
         private static PackedElement PackNodeElement(IWorldElement element)
         {
             return new PackedElement(element);
@@ -247,12 +211,7 @@ namespace FluxMcp
                 throw new ArgumentException("Invalid RefID format.", nameof(refId));
             }
 
-            var element = FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId);
-            if (element == null)
-            {
-                throw new InvalidOperationException($"No element found with RefID: {refId}");
-            }
-
+            var element = FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId) ?? throw new InvalidOperationException($"No element found with RefID: {refId}");
             return new PackedElement(element);
         }
     }
@@ -318,6 +277,42 @@ namespace FluxMcp
                 node.NodeGlobalRefCount,
                 node.NodeGlobalRefListCount
             );
+        }
+    }
+
+    public class PackedElement
+    {
+        public string RefId { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string? ParentRefId { get; set; }
+
+        public PackedElement(IWorldElement element)
+        {
+            if (element is null) throw new ArgumentNullException(nameof(element)); // Simplified null check for IDE0270
+
+            RefId = element.ReferenceID.ToString();
+            Name = element.Name;
+            Type = element.GetType().Name;
+            ParentRefId = element.Parent?.ReferenceID.ToString();
+        }
+    }
+
+    public class PackedElementList
+    {
+        public string RefId { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public IReadOnlyCollection<PackedElement> Elements { get; }
+
+        public PackedElementList(ISyncList list)
+        {
+            if (list == null) throw new ArgumentNullException(nameof(list));
+
+            RefId = list.ReferenceID.ToString();
+            Name = list.Name;
+            Type = list.GetType().Name;
+            Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList().AsReadOnly();
         }
     }
 }

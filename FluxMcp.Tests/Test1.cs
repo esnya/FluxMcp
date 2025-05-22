@@ -19,7 +19,7 @@ public sealed class McpServerTests
     {
         // Arrange
         var mod = new FluxMcpMod();
-        FluxMcpMod.RegisterHotReloadAction = null;
+        mod.RegisterHotReloadAction = null;
 
         // Intercept and set FinishedLoading for testing purposes
         typeof(ResoniteModBase).GetProperty("FinishedLoading", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(mod, true);

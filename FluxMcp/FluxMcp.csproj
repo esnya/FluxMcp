@@ -17,22 +17,22 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-                <RootNamespace>FluxMcp</RootNamespace>
-                <AssemblyName>FluxMcp</AssemblyName>
-                <AssemblyTitle>FluxMcp</AssemblyTitle>
-                <Title>FluxMcp</Title>
-                <Description>ProtoFlux MCP Server Mod</Description>
-                <Authors>esnya</Authors>
-                <RepositoryUrl>https://github.com/placeholder/FluxMcp</RepositoryUrl>
-                <RepositoryType>git</RepositoryType>
-                <PackageTags>Resonite,Mod,ResoniteModLoader</PackageTags>
-                <Version>0.3.0</Version>
-                <PackageReadmeFile>README.md</PackageReadmeFile>
+		<RootNamespace>FluxMcp</RootNamespace>
+		<AssemblyName>FluxMcp</AssemblyName>
+		<AssemblyTitle>FluxMcp</AssemblyTitle>
+		<Title>FluxMcp</Title>
+		<Description>ProtoFlux MCP Server Mod</Description>
+		<Authors>esnya</Authors>
+		<RepositoryUrl>https://github.com/placeholder/FluxMcp</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>Resonite,Mod,ResoniteModLoader</PackageTags>
+		<Version>0.3.0</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<PropertyGroup>
-                <Product>$(AssemblyTitle)</Product>
-                <Copyright>Copyright (c) 2025 $(Authors)</Copyright>
+		<Product>$(AssemblyTitle)</Product>
+		<Copyright>Copyright (c) 2025 $(Authors)</Copyright>
 		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
@@ -46,26 +46,26 @@
 		<ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
 	</PropertyGroup>
 
-  <ItemGroup>
-          <None Include=".github\**\" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include=".github\**\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.2" />
-    <PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.2" />
-    <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-    <PackageReference Include="System.Threading.Channels" Version="9.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.2" />
+		<PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.2" />
+		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="ResoniteModLoader">
-		    <HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
-		    <Private>False</Private>
+			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="HarmonyLib">
-		    <HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
-		    <HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
+			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+			<HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="System.Threading.Channels">
@@ -98,22 +98,27 @@
 		</Reference>
 	</ItemGroup>
 
-        <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-                <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
-                <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods" ContinueOnError="true" />
-        </Target>
-        <Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug'">
-                <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods" Importance="high" />
-                <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
-        </Target>
-        <Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-                <ItemGroup>
-                        <NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' and !'%(FileName)'.StartsWith('System.')" />
-                </ItemGroup>
-                <Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
-                <Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
-        </Target>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
+		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods" ContinueOnError="true" />
+	</Target>
+	<Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug'">
+		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods" Importance="high" />
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
+	</Target>
+	<Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
+		<ItemGroup>
+			<!-- 指定したDLL名のみコピーする -->
+			<NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' &#xA;                                  and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
+		</ItemGroup>
+		<Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
+		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
+	</Target>
+	<PropertyGroup>
+		<!-- 指定するDLL名をセミコロン区切りで列挙 -->
+		<DllsToCopy>Microsoft.Owin.dll;Microsoft.Extensions.Hosting.Abstractions.dll;ModelContextProtocol.dll;Microsoft.Owin.Hosting.dll;Microsoft.Owin.Host.HttpListener.dll;Microsoft.Extensions.Hosting.dll;Microsoft.Extensions.Diagnostics.Abstractions.dll;Microsoft.Extensions.Configuration.dll</DllsToCopy>
+	</PropertyGroup>
 	<ItemGroup>
-	  <EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
+		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
 	</ItemGroup>
 </Project>

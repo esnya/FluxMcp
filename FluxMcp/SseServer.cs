@@ -1,5 +1,4 @@
 ﻿// Startup.cs
-using FrooxEngine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Owin;
@@ -22,16 +21,18 @@ namespace FluxMcp
     /// </summary>
     public sealed class McpSseServerHost : IDisposable
     {
-        private readonly string _url;
-        private IDisposable? _listener;       // Handle returned by WebApp.Start
+        private readonly string _url; // Changed to readonly to resolve CA1051
+        private IDisposable? _listener; // Reverted readonly to fix CS0191
         private IHost? _host;
         private int _started;                 // Prevents double start
 
         public bool IsRunning => Volatile.Read(ref _started) == 1;
 
-        public McpSseServerHost(string url = "http://localhost:5000/")
+        public McpSseServerHost(Uri url)
         {
-            _url = url.EndsWith("/") ? url : url + "/";
+            if (url == null) throw new ArgumentNullException(nameof(url)); // Updated parameter type to Uri for CA1054
+
+            _url = url.ToString().EndsWith("/", StringComparison.Ordinal) ? url.ToString() : url + "/"; // Added StringComparison.Ordinal for CA1310
         }
 
         /// <summary>Start the server asynchronously.</summary>
@@ -75,9 +76,9 @@ namespace FluxMcp
                 _listener = null;
                 ResoniteMod.Debug("Server stopped.");
             }
-            catch (Exception ex)
+            catch (ObjectDisposedException ex)
             {
-                ResoniteMod.Error($"Error stopping server: {ex.Message}");
+                ResoniteMod.Error($"Error stopping server: {ex.Message}"); // Catching specific exception for CA1031
             }
         }
 
@@ -88,7 +89,7 @@ namespace FluxMcp
     public sealed class Startup
     {
         public IHost? HostInstance { get; private set; }
-        public (Pipe, Pipe)? PipeSet;
+        public (Pipe, Pipe)? PipeSet { get; private set; }
 
         public void Configuration(IAppBuilder app)
         {
