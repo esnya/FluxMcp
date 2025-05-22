@@ -9,6 +9,11 @@ A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoade
 1. Place the `FluxMcp.dll` from your build into your `rml_mods` folder. This folder should be located at `C:\Program Files (x86)\Steam\steamapps\common\Resonite\rml_mods` for a standard installation. You can create it if it's missing, or if you start the game once with the ResoniteModLoader installed it will create this folder for you.
 1. Launch the game. If you want to check that the mod is working you can check your Resonite logs.
 
+## Configuration
+
+`Enabled` determines whether the TCP server is started. This value defaults to `true` and can be toggled at runtime.
+`Bind address` and `Listen port` control where the TCP server listens. Changes to these settings restart the server automatically.
+
 
 ## Development Requirements
 

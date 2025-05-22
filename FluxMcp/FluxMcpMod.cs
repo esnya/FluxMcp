@@ -24,7 +24,12 @@ public partial class FluxMcpMod : ResoniteMod
     private static ModConfiguration? _config;
 
     [AutoRegisterConfigKey]
-    private static readonly ModConfigurationKey<string> _bindAddressKey = new ModConfigurationKey<string>("Bind adderess", computeDefault:  () => "127.0.0.1");
+    private static readonly ModConfigurationKey<bool> _enabledKey = new ModConfigurationKey<bool>(
+        "Enabled",
+        computeDefault: () => true);
+
+    [AutoRegisterConfigKey]
+    private static readonly ModConfigurationKey<string> _bindAddressKey = new ModConfigurationKey<string>("Bind address", computeDefault: () => "127.0.0.1");
 
     [AutoRegisterConfigKey]
     private static readonly ModConfigurationKey<int> _portKey = new ModConfigurationKey<int>("Listen port", computeDefault: () => 5000);
@@ -39,6 +44,41 @@ public partial class FluxMcpMod : ResoniteMod
 
     private static TcpTransport? _tcpServer;
 
+    private static void RestartTcpServer()
+    {
+        StopTcpServer();
+
+        if (_config?.GetValue(_enabledKey) != false)
+        {
+            StartTcpServer();
+        }
+    }
+
+    private static void StartTcpServer()
+    {
+        if (_tcpServer != null)
+        {
+            return;
+        }
+
+        Debug("Starting TCP server...");
+        _tcpServer = new TcpTransport(
+            _config?.GetValue(_bindAddressKey) ?? "127.0.0.1",
+            _config?.GetValue(_portKey) ?? 5000);
+        Task.Run(() => _tcpServer.StartAsync(default));
+    }
+
+    private static void StopTcpServer()
+    {
+        if (_tcpServer == null)
+        {
+            return;
+        }
+
+        _tcpServer.Stop();
+        _tcpServer = null;
+    }
+
     public override void OnEngineInit()
     {
         Init(this);
@@ -50,15 +90,35 @@ public partial class FluxMcpMod : ResoniteMod
     private static void Init(ResoniteMod modInstance)
     {
         _config = modInstance?.GetConfiguration();
-        Debug("Starting TCP server...");
-        _tcpServer = new TcpTransport(_config?.GetValue(_bindAddressKey) ?? "127.0.0.1", _config?.GetValue(_portKey) ?? 5000);
-        Task.Run(() => _tcpServer.StartAsync(default));
+
+        _enabledKey.OnChanged += value =>
+        {
+            if (value is bool enabled)
+            {
+                if (enabled)
+                {
+                    StartTcpServer();
+                }
+                else
+                {
+                    StopTcpServer();
+                }
+            }
+        };
+
+        _bindAddressKey.OnChanged += _ => RestartTcpServer();
+        _portKey.OnChanged += _ => RestartTcpServer();
+
+        if (_config?.GetValue(_enabledKey) != false)
+        {
+            StartTcpServer();
+        }
     }
 
 #if DEBUG
     public static void BeforeHotReload()
     {
-        _tcpServer?.Stop();
+        StopTcpServer();
     }
 
     public static void OnHotReload(ResoniteMod modInstance)
