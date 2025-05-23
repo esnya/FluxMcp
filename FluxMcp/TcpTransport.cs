@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Server;
 using ResoniteModLoader;
 using System;
@@ -39,12 +38,9 @@ namespace FluxMcp
 
             using var networkStream = client.GetStream();
 
-            var services = new ServiceCollection();
-            services.AddMcpServer()
-                .WithStreamServerTransport(PipeSet.Item1.Reader.AsStream(), PipeSet.Item2.Writer.AsStream())
-                .WithToolsFromAssembly();
-
-            var mcpServer = services.BuildServiceProvider().GetRequiredService<IMcpServer>();
+            var mcpServer = McpServerBuilder.Build(
+                PipeSet.Item1.Reader,
+                PipeSet.Item2.Writer);
             _ = mcpServer.RunAsync(cancellationToken).ConfigureAwait(false);
 
             try

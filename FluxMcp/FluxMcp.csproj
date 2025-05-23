@@ -51,7 +51,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
 		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
@@ -106,7 +105,7 @@
 	</Target>
 	<PropertyGroup>
 			<!-- Removed Microsoft.Owin.dll and Microsoft.Owin.Hosting.dll -->
-		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Extensions.DependencyInjection</DllsToCopy>
+                <DllsToCopy>ModelContextProtocol.dll</DllsToCopy>
 	</PropertyGroup>
 	<ItemGroup>
 		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
