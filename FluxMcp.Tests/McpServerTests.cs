@@ -1,15 +1,6 @@
-﻿using FluxMcp;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using FrooxEngine;
-using System.Reflection;
-using Elements.Core;
+﻿
 using ModelContextProtocol.Client;
 using ResoniteModLoader;
-using ResoniteHotReloadLib;
-using System.Diagnostics;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
@@ -24,7 +15,7 @@ public sealed class McpServerTests
     public async Task McpServer_ShouldReturnNonEmptyToolsArray()
     {
         var mod = new FluxMcpMod();
-        mod.RegisterHotReloadAction = null;
+        FluxMcpMod.RegisterHotReloadAction = null;
 
         typeof(ResoniteModBase).GetProperty("FinishedLoading", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(mod, true);
 
@@ -40,6 +31,7 @@ public sealed class McpServerTests
         var client = await McpClientFactory.CreateAsync(clientTransport);
 
         var tools = await client.ListToolsAsync().ConfigureAwait(false);
+        Console.WriteLine($"{tools.Count} tools found:\n{string.Join(", ", tools.Select(t => '\t' + t.Name))}");
 
         Assert.IsNotNull(tools, "Tools array should not be null.");
         Assert.IsTrue(tools.Count > 0, "Tools array should not be empty.");

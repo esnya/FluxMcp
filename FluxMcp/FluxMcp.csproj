@@ -104,8 +104,7 @@
 		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
 	</Target>
 	<PropertyGroup>
-			<!-- Removed Microsoft.Owin.dll and Microsoft.Owin.Hosting.dll -->
-                <DllsToCopy>ModelContextProtocol.dll</DllsToCopy>
+		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Extensions.DependencyInjection</DllsToCopy>
 	</PropertyGroup>
 	<ItemGroup>
 		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />

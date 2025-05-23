@@ -1,3 +1,4 @@
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using System;
 using System.IO.Pipelines;
@@ -7,10 +8,8 @@ namespace FluxMcp;
 
 internal static class McpServerBuilder
 {
-    public static IMcpServer Build(PipeReader reader, PipeWriter writer)
+    public static IMcpServer Build(ITransport transport)
     {
-        var transport = new StreamServerTransport(reader.AsStream(), writer.AsStream());
-
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();
         foreach (var type in typeof(NodeTools).Assembly.GetTypes())
         {

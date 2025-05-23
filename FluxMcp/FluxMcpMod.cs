@@ -3,6 +3,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ResoniteModLoader;
+using System.Threading;
+
 
 #if DEBUG
 using ResoniteHotReloadLib;
@@ -33,9 +35,9 @@ public partial class FluxMcpMod : ResoniteMod
 
     [AutoRegisterConfigKey]
     private static readonly ModConfigurationKey<int> _portKey = new ModConfigurationKey<int>("Listen port", computeDefault: () => 5000);
-    
 
-    public Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
+    private static CancellationTokenSource cts = new CancellationTokenSource();
+    public static Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
     {
 #if DEBUG
         HotReloader.RegisterForHotReload(mod);
@@ -62,10 +64,11 @@ public partial class FluxMcpMod : ResoniteMod
         }
 
         Debug("Starting TCP server...");
-        _tcpServer = new TcpTransport(
-            _config?.GetValue(_bindAddressKey) ?? "127.0.0.1",
-            _config?.GetValue(_portKey) ?? 5000);
-        Task.Run(() => _tcpServer.StartAsync(default));
+        var bindAddress = _config?.GetValue(_bindAddressKey) ?? "127.0.0.1";
+        var port = _config?.GetValue(_portKey) ?? 5000;
+
+        _tcpServer = new TcpTransport(bindAddress, port);
+        Task.Run(() => _tcpServer.StartAsync(cts.Token));
     }
 
     private static void StopTcpServer()
@@ -82,14 +85,16 @@ public partial class FluxMcpMod : ResoniteMod
     public override void OnEngineInit()
     {
         Init(this);
-#if DEBUG
-        RegisterHotReloadAction?.Invoke(this);
-#endif
     }
 
     private static void Init(ResoniteMod modInstance)
     {
+#if DEBUG
+        RegisterHotReloadAction?.Invoke(modInstance);
+#endif
+
         _config = modInstance?.GetConfiguration();
+        Debug($"Config initialized: {_config != null}");
 
         _enabledKey.OnChanged += value =>
         {
