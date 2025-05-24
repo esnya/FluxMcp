@@ -161,6 +161,7 @@ namespace FluxMcp
                         slot.LocalPosition = position;
                     }
                     slot.GlobalScale = parentSlot.GlobalScale;
+                    slot.Tag = null!;
                     ResoniteMod.DebugFunc(() => $"Slot created {slot}");
                 });
 
@@ -207,16 +208,33 @@ namespace FluxMcp
             }
         }
 
-        [McpServerTool(Name = "listSubCategories"), Description("Search sub categories ('/' separeted)")]
-        public static IEnumerable<string> ListSubCategories(int maxItems, string category = "", int skip = 0)
+        private static CategoryNode<Type> GetProtoFluxNodeCategory(string category)
         {
-            return WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes/" + category).Subcategories.Skip(skip).Take(maxItems).Select(x => (category + '/' + x.Name).Replace("//", "/"));
+            var fullCategory = "ProtoFlux/Runtimes/Execution/Nodes/" + category;
+            ResoniteMod.DebugFunc(() => $"Getting ProtoFlux Node Category {fullCategory}");
+            return WorkerInitializer.ComponentLibrary.GetSubcategory(fullCategory);
+        }
+
+        [McpServerTool(Name = "listSubCategories"), Description("Search sub categories ('/' separeted)")]
+        public static ListResult<string> ListSubCategories(int maxItems, string category = "", int skip = 0)
+        {
+            var list = GetProtoFluxNodeCategory(category).Subcategories.ToList();
+            return new ListResult<string>(
+                list.Select(x => (category + '/' + x.Name).Replace("//", "/")).Skip(skip).Take(maxItems),
+                list.Count,
+                skip
+            );
         }
 
         [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
-        public static IEnumerable<string> ListNodeType(string category, int maxItems, int skip = 0)
+        public static ListResult<string> ListNodeType(string category, int maxItems, int skip = 0)
         {
-            return WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes/" + category).Elements.Skip(skip).Take(maxItems).Select(EncodeType);
+            var categoryNode = GetProtoFluxNodeCategory(category);
+            return new ListResult<string>(
+                categoryNode.Elements.Select(EncodeType).Skip(skip).Take(maxItems),
+                categoryNode.ElementCount,
+                skip
+            );
         }
 
         private static IEnumerable<string> SearchNodeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
@@ -500,6 +518,20 @@ namespace FluxMcp
             Name = list.Name;
             Type = list.GetType().Name;
             Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList().AsReadOnly();
+        }
+    }
+
+    public class ListResult<T>
+    {
+        public IEnumerable<T> Items { get; }
+        public int TotalCount { get; }
+        public int Skip { get; }
+
+        public ListResult(IEnumerable<T> items, int totalCount, int skip = 0)
+        {
+            Items = items ?? throw new ArgumentNullException(nameof(items));
+            TotalCount = totalCount;
+            Skip = skip;
         }
     }
 }
