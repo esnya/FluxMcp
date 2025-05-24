@@ -25,10 +25,12 @@ namespace FluxMcp
             {
                 _listener.Start();
                 ResoniteMod.Msg($"TCP server started on {_listener.LocalEndpoint}");
+                ResoniteMod.Debug($"Listener started at {_listener.LocalEndpoint}");
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var client = await _listener.AcceptTcpClientAsync().ConfigureAwait(false);
+                    ResoniteMod.Debug($"Accepted connection from {client.Client.RemoteEndPoint}");
                     _ = Task.Run(() => HandleClientAsync(client, cancellationToken), cancellationToken);
                 }
 
@@ -36,7 +38,7 @@ namespace FluxMcp
             }
             catch (Exception ex)
             {
-                ResoniteMod.Error($"Error in StartAsync: {ex.Message}");
+                ResoniteMod.Warn($"Error in StartAsync: {ex.Message}");
                 throw;
             }
         }
@@ -50,14 +52,22 @@ namespace FluxMcp
 
                 ResoniteMod.Msg($"Client {client.Client.RemoteEndPoint} connected");
 
+                ResoniteMod.Debug("Building streams");
+
                 using var networkStream = client.GetStream();
 
                 using var inputReaderStream = inputPipe.Reader.AsStream();
                 using var outputWriterStream = outputPipe.Writer.AsStream();
                 await using var transport = new StreamServerTransport(inputReaderStream, outputWriterStream);
+
+                ResoniteMod.Debug("Bulding MCP Server");
                 var mcpServer = McpServerBuilder.Build(transport);
+                ResoniteMod.DebugFunc(() => $"MCP Server built ${mcpServer}.");
+
+                ResoniteMod.Debug("Starting MCP Server");
                 _ = mcpServer.RunAsync(cancellationToken).ConfigureAwait(false);
 
+                ResoniteMod.Debug("Starting input loop");
                 var inputLoop = Task.Run(async () =>
                 {
                     using var inputStream = inputPipe.Writer.AsStream();
@@ -65,11 +75,13 @@ namespace FluxMcp
                     int bytesRead;
                     while ((bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0 && !cancellationToken.IsCancellationRequested)
                     {
+                        ResoniteMod.Debug($"Received {bytesRead} bytes from {client.Client.RemoteEndPoint}");
                         await inputStream.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
                         await inputStream.FlushAsync(cancellationToken).ConfigureAwait(false);
                     }
                 }, cancellationToken);
 
+                ResoniteMod.Debug("Starting output loop");
                 var outputLoop = Task.Run(async () =>
                 {
                     using var outputStream = outputPipe.Reader.AsStream();
@@ -77,16 +89,18 @@ namespace FluxMcp
                     int bytesRead;
                     while ((bytesRead = await outputStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0 && !cancellationToken.IsCancellationRequested)
                     {
+                        ResoniteMod.Debug($"Sending {bytesRead} bytes to {client.Client.RemoteEndPoint}");
                         await networkStream.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
                     }
                 }, cancellationToken);
 
                 await Task.WhenAll(inputLoop, outputLoop).ConfigureAwait(false);
+                ResoniteMod.Debug($"Client {client.Client.RemoteEndPoint} communication loops completed");
                 await mcpServer.DisposeAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                ResoniteMod.Error($"Error while handling client {client.Client.RemoteEndPoint}: {ex.Message}");
+                ResoniteMod.Warn($"Error while handling client {client.Client.RemoteEndPoint}: {ex.Message}");
                 throw;
             }
             finally

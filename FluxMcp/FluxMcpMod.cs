@@ -65,7 +65,7 @@ public partial class FluxMcpMod : ResoniteMod
 
         Debug("Starting TCP server...");
         var bindAddress = _config?.GetValue(_bindAddressKey) ?? "127.0.0.1";
-        var port = _config?.GetValue(_portKey) ?? 5000;
+        var port = _config?.GetValue(_portKey) ?? 5001;
 
         _tcpServer = new TcpTransport(bindAddress, port);
         Task.Run(() => _tcpServer.StartAsync(cts.Token));

@@ -104,7 +104,7 @@
 		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
 	</Target>
 	<PropertyGroup>
-		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Extensions.DependencyInjection</DllsToCopy>
+		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll</DllsToCopy>
 	</PropertyGroup>
 	<ItemGroup>
 		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
