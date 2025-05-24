@@ -388,115 +388,115 @@ namespace FluxMcp
             return new PackedElementList(list);
         }
 
-        [McpServerTool(Name = "getNodeOutput"), Description("Gets the output of a node by index.")]
-        public static CallToolResult GetNodeOutput(string nodeRefId, int outputIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetOutput(outputIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeOutput"), Description("Gets the output of a node by index.")]
+        //public static CallToolResult GetNodeOutput(string nodeRefId, int outputIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetOutput(outputIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeInput"), Description("Gets the input of a node by index.")]
-        public static CallToolResult GetNodeInput(string nodeRefId, int inputIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetInput(inputIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeInput"), Description("Gets the input of a node by index.")]
+        //public static CallToolResult GetNodeInput(string nodeRefId, int inputIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetInput(inputIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeImpulse"), Description("Gets the impulse of a node by index.")]
-        public static CallToolResult GetNodeImpulse(string nodeRefId, int impulseIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetImpulse(impulseIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeImpulse"), Description("Gets the impulse of a node by index.")]
+        //public static CallToolResult GetNodeImpulse(string nodeRefId, int impulseIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetImpulse(impulseIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeOperation"), Description("Gets the operation of a node by index.")]
-        public static CallToolResult GetNodeOperation(string nodeRefId, int operationIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetOperation(operationIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeOperation"), Description("Gets the operation of a node by index.")]
+        //public static CallToolResult GetNodeOperation(string nodeRefId, int operationIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetOperation(operationIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeReference"), Description("Gets the reference of a node by index.")]
-        public static CallToolResult GetNodeReference(string nodeRefId, int referenceIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetReference(referenceIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeReference"), Description("Gets the reference of a node by index.")]
+        //public static CallToolResult GetNodeReference(string nodeRefId, int referenceIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetReference(referenceIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeInputList"), Description("Gets the input list of a node by index.")]
-        public static CallToolResult GetNodeInputList(string nodeRefId, int inputListIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElementList(node.GetInputList(inputListIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeInputList"), Description("Gets the input list of a node by index.")]
+        //public static CallToolResult GetNodeInputList(string nodeRefId, int inputListIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElementList(node.GetInputList(inputListIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeOutputList"), Description("Gets the output list of a node by index.")]
-        public static CallToolResult GetNodeOutputList(string nodeRefId, int outputListIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElementList(node.GetOutputList(outputListIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeOutputList"), Description("Gets the output list of a node by index.")]
+        //public static CallToolResult GetNodeOutputList(string nodeRefId, int outputListIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElementList(node.GetOutputList(outputListIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeImpulseList"), Description("Gets the impulse list of a node by index.")]
-        public static CallToolResult GetNodeImpulseList(string nodeRefId, int impulseListIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElementList(node.GetImpulseList(impulseListIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeImpulseList"), Description("Gets the impulse list of a node by index.")]
+        //public static CallToolResult GetNodeImpulseList(string nodeRefId, int impulseListIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElementList(node.GetImpulseList(impulseListIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeOperationList"), Description("Gets the operation list of a node by index.")]
-        public static CallToolResult GetNodeOperationList(string nodeRefId, int operationListIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElementList(node.GetOperationList(operationListIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeOperationList"), Description("Gets the operation list of a node by index.")]
+        //public static CallToolResult GetNodeOperationList(string nodeRefId, int operationListIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElementList(node.GetOperationList(operationListIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeGlobalRef"), Description("Gets the global reference of a node by index.")]
-        public static CallToolResult GetNodeGlobalRef(string nodeRefId, int globalRefIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElement(node.GetGlobalRef(globalRefIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeGlobalRef"), Description("Gets the global reference of a node by index.")]
+        //public static CallToolResult GetNodeGlobalRef(string nodeRefId, int globalRefIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElement(node.GetGlobalRef(globalRefIndex));
+        //    });
+        //}
 
-        [McpServerTool(Name = "getNodeGlobalRefList"), Description("Gets the global reference list of a node by index.")]
-        public static CallToolResult GetNodeGlobalRefList(string nodeRefId, int globalRefListIndex)
-        {
-            return Handle(() =>
-            {
-                var node = FindNodeInternal(nodeRefId);
-                return PackNodeElementList(node.GetGlobalRefList(globalRefListIndex));
-            });
-        }
+        //[McpServerTool(Name = "getNodeGlobalRefList"), Description("Gets the global reference list of a node by index.")]
+        //public static CallToolResult GetNodeGlobalRefList(string nodeRefId, int globalRefListIndex)
+        //{
+        //    return Handle(() =>
+        //    {
+        //        var node = FindNodeInternal(nodeRefId);
+        //        return PackNodeElementList(node.GetGlobalRefList(globalRefListIndex));
+        //    });
+        //}
 
         [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
         public static CallToolResult GetWorldElement(string refId)
@@ -510,6 +510,38 @@ namespace FluxMcp
 
                 var element = FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId) ?? throw new InvalidOperationException($"No element found with RefID: {refId}");
                 return new PackedElement(element);
+            });
+        }
+
+        [McpServerTool(Name = "getInputValue"), Description("Gets the value of input node")]
+        public static CallToolResult GetInputValue(string nodeRefId, int inputIndex)
+        {
+            return Handle(() =>
+            {
+                var node = FindNodeInternal(nodeRefId);
+                if (node is not IInput inputNode)
+                {
+                    throw new InvalidOperationException($"Node {nodeRefId} is not an input node.");
+                }
+
+                return inputNode.BoxedValue;
+            });
+        }
+
+        [McpServerTool(Name = "setInputValue"), Description("Sets the value of input node")]
+        public static CallToolResult SetInputValue(string nodeRefId, int inputIndex, object value)
+        {
+            return Handle(() =>
+            {
+                var node = FindNodeInternal(nodeRefId);
+                if (node is not IInput inputNode)
+                {
+                    throw new InvalidOperationException($"Node {nodeRefId} is not an input node.");
+                }
+
+                inputNode.BoxedValue = (object)value;
+
+                return inputNode.BoxedValue;
             });
         }
     }
