@@ -60,7 +60,7 @@ namespace FluxMcp
             return result;
         }
 
-        private static CallToolResult ToResult(object? obj)
+        private static AIContent ToResult(object? obj)
         {
             AIContent content = obj switch
             {
@@ -69,10 +69,10 @@ namespace FluxMcp
                 _ => new TextContent(JsonSerializer.Serialize(obj, McpJsonUtilities.DefaultOptions))
             };
 
-            return CallToolResult.Success(content);
+            return content;
         }
 
-        private static CallToolResult Handle(Func<object?> func)
+        private static AIContent Handle(Func<object?> func)
         {
             try
             {
@@ -80,11 +80,11 @@ namespace FluxMcp
             }
             catch (Exception ex)
             {
-                return CallToolResult.Error(new TextContent(ex.Message));
+                return new ErrorContent(ex.Message);
             }
         }
 
-        private static async Task<CallToolResult> HandleAsync(Func<Task<object?>> func)
+        private static async Task<AIContent> HandleAsync(Func<Task<object?>> func)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace FluxMcp
             }
             catch (Exception ex)
             {
-                return CallToolResult.Error(new TextContent(ex.Message));
+                return new ErrorContent(ex.Message);
             }
         }
 
@@ -102,7 +102,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. Dimension of postition: (Right, Up, Forward).")]
-        public static Task<CallToolResult> CreateNode(string type, float3 position)
+        public static Task<AIContent> CreateNode(string type, float3 position)
         {
             return HandleAsync(async () =>
             {
@@ -223,7 +223,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "findNode"), Description("Finds a node by its reference ID.")]
-        public static CallToolResult FindNode(string reference)
+        public static AIContent FindNode(string reference)
         {
             return Handle(() => NodeInfo.Encode(FindNodeInternal(reference)));
         }
@@ -258,7 +258,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "listSubCategories"), Description("Search sub categories ('/' separeted)")]
-        public static CallToolResult ListSubCategories(int maxItems, string category = "", int skip = 0)
+        public static AIContent ListSubCategories(int maxItems, string category = "", int skip = 0)
         {
             return Handle(() =>
             {
@@ -272,7 +272,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
-        public static CallToolResult ListNodeType(string category, int maxItems, int skip = 0)
+        public static AIContent ListNodeType(string category, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
@@ -294,7 +294,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "searchNode"), Description("Search node in all category.")]
-        public static CallToolResult SearchNode(string search, int maxItems, int skip = 0)
+        public static AIContent SearchNode(string search, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
@@ -304,7 +304,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
-        public static CallToolResult DeleteNode(string nodeRefId)
+        public static AIContent DeleteNode(string nodeRefId)
         {
             return Handle(() =>
             {
@@ -314,7 +314,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectInput"), Description("Attempts to connect an input to an output.")]
-        public static Task<CallToolResult> TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
+        public static Task<AIContent> TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -335,7 +335,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectImpulse"), Description("Attempts to connect an impulse to an operation.")]
-        public static Task<CallToolResult> TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
+        public static Task<AIContent> TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -357,7 +357,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectReference"), Description("Attempts to connect a reference to another node.")]
-        public static Task<CallToolResult> TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
+        public static Task<AIContent> TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -499,7 +499,7 @@ namespace FluxMcp
         //}
 
         [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
-        public static CallToolResult GetWorldElement(string refId)
+        public static AIContent GetWorldElement(string refId)
         {
             return Handle(() =>
             {
@@ -514,7 +514,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "getInputValue"), Description("Gets the value of input node")]
-        public static CallToolResult GetInputValue(string nodeRefId, int inputIndex)
+        public static AIContent GetInputValue(string nodeRefId, int inputIndex)
         {
             return Handle(() =>
             {
@@ -529,7 +529,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "setInputValue"), Description("Sets the value of input node")]
-        public static CallToolResult SetInputValue(string nodeRefId, int inputIndex, object value)
+        public static AIContent SetInputValue(string nodeRefId, int inputIndex, object value)
         {
             return Handle(() =>
             {
