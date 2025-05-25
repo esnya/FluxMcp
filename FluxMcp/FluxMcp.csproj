@@ -102,7 +102,7 @@
 	</Target>
 	<Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
 		<ItemGroup>
-			<!-- 指定したDLL名のみコピーする -->
+                        <!-- Copy only the specified DLLs -->
 			<NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' &#xA;                                  and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
 		</ItemGroup>
 		<Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
