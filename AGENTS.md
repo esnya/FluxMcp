@@ -8,3 +8,4 @@
 - Stop the SSE server when the engine shuts down and clear static references.
 - Use Conventional Commit messages with an emoji.
 - Always run `dotnet test` before committing.
+- Currently package retrieval fails, so building and running tests is not possible.
