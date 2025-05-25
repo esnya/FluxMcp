@@ -305,13 +305,15 @@ namespace FluxMcp
         private static IEnumerable<string> GatherSubcategories(CategoryNode<Type> category, string prefix = "")
         {
             ResoniteMod.DebugFunc(() => $"Gathering subcategories for {category.Name} with prefix {prefix}");
-            if (category.ElementCount == 0)
+            var subcategories = category.Subcategories?.ToList();
+            if (category.ElementCount == 0 && (subcategories == null || subcategories.Count == 0))
             {
+                // No elements in this category, return empty
                 ResoniteMod.DebugFunc(() => $"No elements in category {category.Name}");
                 return Enumerable.Empty<string>();
             }
 
-            return category.Subcategories?.SelectMany(sub =>
+            return subcategories?.SelectMany(sub =>
                 {
                     var subPrefix = prefix + sub.Name + '/';
                     return GatherSubcategories(sub, subPrefix).Prepend(prefix + sub.Name);
