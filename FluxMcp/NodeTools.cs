@@ -60,23 +60,13 @@ namespace FluxMcp
             return result;
         }
 
-        private static AIContent ToResult(object? obj)
-        {
-            AIContent content = obj switch
-            {
-                AIContent ai => ai,
-                string s => new TextContent(s),
-                _ => new TextContent(JsonSerializer.Serialize(obj, McpJsonUtilities.DefaultOptions))
-            };
 
-            return content;
-        }
-
-        private static AIContent Handle(Func<object?> func)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
+        private static object? Handle<T>(Func<T> func)
         {
             try
             {
-                return ToResult(func());
+                return func();
             }
             catch (Exception ex)
             {
@@ -84,22 +74,16 @@ namespace FluxMcp
             }
         }
 
-        private static async Task<AIContent> HandleAsync(Func<Task<object?>> func)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
+        private static async Task<object?> HandleAsync<T>(Func<Task<T>> func)
         {
             try
             {
-                return ToResult(await func().ConfigureAwait(false));
+                return await func().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                if (ResoniteMod.IsDebugEnabled())
-                {
-                    return new ErrorContent(ex.Message + "\n" + ex.StackTrace);
-                }
-                else
-                {
-                    return new ErrorContent(ex.Message);
-                }
+                return new ErrorContent(ex.Message);
             }
         }
 
@@ -150,7 +134,7 @@ namespace FluxMcp
                 .Select(name => new
                 {
                     Name = name,
-                    Distance = LevenshteinDistance(name.AsSpan().ToUpperInvariant(), search.AsSpan())
+                    Distance = LevenshteinDistance(name.ToUpperInvariant().AsSpan(), search.AsSpan())
                 })
                 .OrderBy(x => x.Distance)
                 .Select(x => x.Name)
@@ -158,7 +142,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. Dimension of postition: (Right, Up, Forward).")]
-        public static Task<AIContent> CreateNode(string type, float3 position)
+        public static Task<object?> CreateNode(string type, float3 position)
         {
             return HandleAsync(async () =>
             {
@@ -284,7 +268,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "findNode"), Description("Finds a node by its reference ID.")]
-        public static AIContent FindNode(string reference)
+        public static object? FindNode(string reference)
         {
             return Handle(() => NodeInfo.Encode(FindNodeInternal(reference)));
         }
@@ -321,15 +305,21 @@ namespace FluxMcp
         private static IEnumerable<string> GatherSubcategories(CategoryNode<Type> category, string prefix = "")
         {
             ResoniteMod.DebugFunc(() => $"Gathering subcategories for {category.Name} with prefix {prefix}");
-            return category.Subcategories?.SelectMany(sub =>
+            if (category.ElementCount == 0)
             {
-                var subPrefix = prefix + sub.Name + '/';
-                return GatherSubcategories(sub, subPrefix).Prepend(prefix + sub.Name);
-            }) ?? Enumerable.Repeat(prefix + category.Name, 1);
+                ResoniteMod.DebugFunc(() => $"No elements in category {category.Name}");
+                return Enumerable.Empty<string>();
+            }
+
+            return category.Subcategories?.SelectMany(sub =>
+                {
+                    var subPrefix = prefix + sub.Name + '/';
+                    return GatherSubcategories(sub, subPrefix).Prepend(prefix + sub.Name);
+                }) ?? Enumerable.Repeat(prefix + category.Name, 1);
         }
 
         [McpServerTool(Name = "getCategories"), Description("Get all ProtoFlux node categories.")]
-        public static object GetCategories()
+        public static object? GetCategories()
         {
             return Handle(() =>
             {
@@ -340,7 +330,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
-        public static AIContent ListNodeType(string category, int maxItems, int skip = 0)
+        public static object? ListNodeType(string category, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
@@ -385,7 +375,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "searchNode"), Description("Search node in all category.")]
-        public static AIContent SearchNode(string search, int maxItems, int skip = 0)
+        public static object? SearchNode(string search, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
@@ -395,7 +385,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
-        public static Task<AIContent> DeleteNode(string nodeRefId)
+        public static Task<object?> DeleteNode(string nodeRefId)
         {
             return HandleAsync(() => UpdateAction(WorkspaceSlot, () =>
                 {
@@ -406,7 +396,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectInput"), Description("Attempts to connect an input to an output.")]
-        public static Task<AIContent> TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
+        public static Task<object?> TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -427,7 +417,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectImpulse"), Description("Attempts to connect an impulse to an operation.")]
-        public static Task<AIContent> TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
+        public static Task<object?> TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -449,7 +439,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "tryConnectReference"), Description("Attempts to connect a reference to another node.")]
-        public static Task<AIContent> TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
+        public static Task<object?> TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
         {
             return HandleAsync(async () =>
                 await UpdateAction(WorkspaceSlot, () =>
@@ -591,7 +581,7 @@ namespace FluxMcp
         //}
 
         [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
-        public static AIContent GetWorldElement(string refId)
+        public static object? GetWorldElement(string refId)
         {
             return Handle(() =>
             {
@@ -606,7 +596,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "getInputValue"), Description("Gets the value of input node")]
-        public static AIContent GetInputValue(string nodeRefId, int inputIndex)
+        public static object? GetInputValue(string nodeRefId, int inputIndex)
         {
             return Handle(() =>
             {
@@ -621,7 +611,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "setInputValue"), Description("Sets the value of input node")]
-        public static AIContent SetInputValue(string nodeRefId, int inputIndex, object value)
+        public static object? SetInputValue(string nodeRefId, int inputIndex, object value)
         {
             return Handle(() =>
             {
