@@ -108,6 +108,55 @@ namespace FluxMcp
             return Types.EncodeType(type).Replace("<>", "<T>").Replace("<,>", "<T1,T2>");
         }
 
+        private static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+        {
+            var d = new int[a.Length + 1, b.Length + 1];
+
+            for (int i = 0; i <= a.Length; i++)
+            {
+                d[i, 0] = i;
+            }
+
+            for (int j = 0; j <= b.Length; j++)
+            {
+                d[0, j] = j;
+            }
+
+            for (int i = 1; i <= a.Length; i++)
+            {
+                for (int j = 1; j <= b.Length; j++)
+                {
+                    var cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+
+            return d[a.Length, b.Length];
+        }
+
+        private static IEnumerable<string> GatherAllNodeTypes(CategoryNode<Type> category)
+        {
+            return category.Elements.Select(EncodeType)
+                .Concat(category.Subcategories.SelectMany(GatherAllNodeTypes));
+        }
+
+        private static string? FindClosestNodeType(string type)
+        {
+            var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
+            var search = type.ToUpperInvariant();
+            return GatherAllNodeTypes(category)
+                .Select(name => new
+                {
+                    Name = name,
+                    Distance = LevenshteinDistance(name.AsSpan().ToUpperInvariant(), search.AsSpan())
+                })
+                .OrderBy(x => x.Distance)
+                .Select(x => x.Name)
+                .FirstOrDefault();
+        }
+
         [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. Dimension of postition: (Right, Up, Forward).")]
         public static Task<AIContent> CreateNode(string type, float3 position)
         {
@@ -141,8 +190,13 @@ namespace FluxMcp
                 ResoniteMod.DebugFunc(() => $"Creating Node {type} -> {decodedType}");
                 if (decodedType == null)
                 {
-                    throw new ArgumentException($"Invalid type: {type}");
+                    var suggestion = FindClosestNodeType(type);
+                    var message = suggestion is null
+                        ? $"Invalid type: {type}"
+                        : $"Invalid type: {type}. Did you mean {suggestion}?";
+                    throw new ArgumentException(message);
                 }
+
                 return NodeInfo.Encode(await CreateNodeInternal(decodedType, position).ConfigureAwait(false));
             });
         }
@@ -301,10 +355,33 @@ namespace FluxMcp
 
         private static IEnumerable<string> SearchNodeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
         {
-            return category.Elements.Select(EncodeType).Where(t => t.ToUpperInvariant().Contains(search))
-                .Concat(
-                    category.Subcategories.SelectMany(sub => SearchNodeInternal(sub, search, maxItems, skip))
-                ).Skip(skip).Take(maxItems);
+            var results = new List<(string Name, int Distance)>();
+
+            void Gather(CategoryNode<Type> node)
+            {
+                foreach (var name in node.Elements.Select(EncodeType))
+                {
+                    var upper = name.ToUpperInvariant();
+                    var distance = upper.Contains(search)
+                        ? 0
+                        : LevenshteinDistance(upper.AsSpan(), search.AsSpan());
+                    results.Add((name, distance));
+                }
+
+                foreach (var sub in node.Subcategories)
+                {
+                    Gather(sub);
+                }
+            }
+
+            Gather(category);
+
+            return results
+                .OrderBy(r => r.Distance)
+                .ThenBy(r => r.Name.Length)
+                .Skip(skip)
+                .Take(maxItems)
+                .Select(r => r.Name);
         }
 
         [McpServerTool(Name = "searchNode"), Description("Search node in all category.")]
