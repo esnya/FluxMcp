@@ -87,19 +87,18 @@ public partial class FluxMcpMod : ResoniteMod
 
         try
         {
+            _httpServer.Stop();
             _cts?.Cancel();
             _serverTask?.GetAwaiter().GetResult();
             _cts?.Dispose();
+            _httpServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
         finally
         {
             _cts = null;
             _serverTask = null;
+            _httpServer = null;
         }
-
-        _httpServer.Stop();
-        _httpServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _httpServer = null;
     }
 
     public override void OnEngineInit()
