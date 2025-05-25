@@ -1,13 +1,16 @@
 using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.ProtoFlux;
-using ModelContextProtocol.Server;
+using FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes.Actions;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Server;
+using ResoniteModLoader;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using ResoniteModLoader;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FluxMcp
@@ -126,12 +129,12 @@ namespace FluxMcp
         private static string? FindClosestNodeType(string search)
         {
             var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
-            var searchUpper = search.ToUpperInvariant();
+            var searchUpper = CleanTypeName(search).ToUpperInvariant();
             return GatherAllNodeTypes(category)
                 .Select(name => new
                 {
                     Name = name,
-                    Distance = LevenshteinDistance(name.ToUpperInvariant().AsSpan(), searchUpper.AsSpan()),
+                    Distance = LevenshteinDistance(CleanTypeName(name).ToUpperInvariant().AsSpan(), searchUpper.AsSpan()),
                 })
                 .OrderBy(x => x.Distance)
                 .Select(x => x.Name)
@@ -149,29 +152,61 @@ namespace FluxMcp
                     throw new ArgumentException("Type cannot be null or empty.", nameof(type));
                 }
 
-            if (type.Contains("<>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<>', use '<T>' instead.");
-                throw new ArgumentException("Invalid generic type format. Do not use '<>', use '<T>' instead.", nameof(type));
-            }
+                if (type.Contains("<>"))
+                {
+                    ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<>', use '<T>' instead.");
+                    throw new ArgumentException("Invalid generic type format. Do not use '<>', use '<T>' instead.", nameof(type));
+                }
 
-            if (type.Contains("<,>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<,>', use '<T1, T2>' instead.");
-                throw new ArgumentException("Invalid generic type format. Do not use '<,>', use '<T1, T2>' instead.", nameof(type));
-            }
+                if (type.Contains("<,>"))
+                {
+                    ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<,>', use '<T1, T2>' instead.");
+                    throw new ArgumentException("Invalid generic type format. Do not use '<,>', use '<T1, T2>' instead.", nameof(type));
+                }
 
-            if (!type.StartsWith("[", StringComparison.Ordinal))
-            {
-                ResoniteMod.Warn($"Type {type} does not start with '['. It should be a valid type name.");
-                throw new ArgumentException("Type must start with '[' to be a valid type name.", nameof(type));
-            }
+                if (type.Contains("<T>"))
+                {
+                    ResoniteMod.Warn($"Invalid generic type format {type}.");
+                    throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>) instead of <T>", nameof(type));
+                }
 
+                if (type.Contains("<T1, T2>"))
+                {
+                    ResoniteMod.Warn($"Invalid generic type format {type}.");
+                    throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3, float3>) instead of <T1, T2>", nameof(type));
+                }
+
+                if (type.Contains("`"))
+                {
+                    ResoniteMod.Warn($"Invalid generic type format {type}.");
+                    throw new ArgumentException("Invalid generic type format. Use '<T>' instead (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>)", nameof(type));
+                }
+                const string bindingPrefix = "[ProtoFluxBindings]";
+                // Ensure prefix exists
+                if (!type.StartsWith(bindingPrefix, StringComparison.Ordinal))
+                {
+                    type = bindingPrefix + type;
+                    ResoniteMod.DebugFunc(() => $"Added binding prefix to type: {type}");
+                }
+                // Fallback: add default namespace if missing
+                const string defaultNamespace = "FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes.";
+                if (!type.StartsWith(bindingPrefix + defaultNamespace, StringComparison.Ordinal))
+                {
+                    var innerType = type.Substring(bindingPrefix.Length);
+                    type = bindingPrefix + defaultNamespace + innerType;
+                    ResoniteMod.DebugFunc(() => $"Applied fallback namespace to type: {type}");
+                }
                 var decodedType = Types.DecodeType(type);
                 ResoniteMod.DebugFunc(() => $"Creating Node {type} -> {decodedType}");
                 if (decodedType == null)
                 {
                     var suggestion = FindClosestNodeType(type);
+                    if (suggestion != null && type.Contains('<') && type.Contains('>') && suggestion.Contains('<') && suggestion.Contains('>'))
+                    {
+                        var typeGeneric = type.Substring(type.IndexOf('<'), type.LastIndexOf('>') - type.IndexOf('<') + 1);
+                        var sugPrefix = suggestion.Substring(0, suggestion.IndexOf('<'));
+                        suggestion = sugPrefix + typeGeneric;
+                    }
                     var message = suggestion is null
                         ? $"Invalid type: {type}"
                         : $"Invalid type: {type}. Did you mean {suggestion}?";
@@ -345,14 +380,14 @@ namespace FluxMcp
         private static IEnumerable<string> SearchNodeTypeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
         {
             var results = new List<(string Name, int Distance)>();
-            var cleanedSearch = CleanTypeName(search);
-            cleanedSearch = cleanedSearch.ToUpperInvariant();
+            // normalize search: remove brackets/generics, namespace, whitespace, and uppercase
+            var cleanedSearch = CleanTypeName(search).Replace(" ", string.Empty).ToUpperInvariant();
 
             void Gather(CategoryNode<Type> node)
             {
                 foreach (var name in node.Elements.Select(EncodeType))
                 {
-                    var cleanedName = CleanTypeName(name).ToUpperInvariant();
+                    var cleanedName = CleanTypeName(name).Replace(" ", string.Empty).ToUpperInvariant();
                     var distance = cleanedName.Contains(cleanedSearch)
                         ? 0
                         : LevenshteinDistance(cleanedName.AsSpan(), cleanedSearch.AsSpan());
@@ -396,67 +431,56 @@ namespace FluxMcp
             );
         }
 
-        [McpServerTool(Name = "tryConnectInput"), Description("Attempts to connect an input to an output.")]
-        public static Task<object?> TryConnectInput(string nodeRefId, int inputIndex, string outputNodeRefId, int outputIndex)
+        public enum ConnectionType
         {
-            return HandleAsync(async () =>
-                await UpdateAction(WorkspaceSlot, () =>
-                {
-                    ResoniteMod.DebugFunc(() => $"Connecting Input: {nodeRefId}({inputIndex} <- {outputNodeRefId}({outputIndex})");
-                    var node = FindNodeInternal(nodeRefId);
-                    ResoniteMod.DebugFunc(() => $"Node: {node}");
-                    var outputNode = FindNodeInternal(outputNodeRefId);
-                    ResoniteMod.DebugFunc(() => $"Node: {outputNode}");
-
-                    var input = node.GetInput(inputIndex);
-                    ResoniteMod.DebugFunc(() => $"input: {input}");
-                    var output = outputNode.GetOutput(outputIndex);
-                    ResoniteMod.DebugFunc(() => $"output: {output}");
-
-                    return node.TryConnectInput(input, output, allowExplicitCast: true, undoable: true);
-                }).ConfigureAwait(false));
+            Input,
+            Output,
+            Impulse,
+            Operation,
+            Reference,
+            InputList,
+            OutputList,
+            ImpulseList,
+            OperationList,
+            GlobalRef,
+            GlobalRefList
         }
 
-        [McpServerTool(Name = "tryConnectImpulse"), Description("Attempts to connect an impulse to an operation.")]
-        public static Task<object?> TryConnectImpulse(string nodeRefId, int impulseIndex, string operationNodeRefId, int operationIndex)
+        private static bool TryConnectInternal(ProtoFluxNode node, ConnectionType connectionType, int index, ProtoFluxNode target, int targetIndex)
         {
-            return HandleAsync(async () =>
-                await UpdateAction(WorkspaceSlot, () =>
-                {
-                    ResoniteMod.DebugFunc(() => $"Connecting Impulse: {nodeRefId}({impulseIndex} <- {operationNodeRefId}({operationIndex})");
-                    var node = FindNodeInternal(nodeRefId);
-                    ResoniteMod.DebugFunc(() => $"Node: {node}");
-
-                    var operationNode = FindNodeInternal(operationNodeRefId);
-                    ResoniteMod.DebugFunc(() => $"Node: {operationNode}");
-
-                    var impulse = node.GetImpulse(impulseIndex);
-                    ResoniteMod.DebugFunc(() => $"impulse: {impulse}");
-                    var operation = operationNode.GetOperation(operationIndex);
-                    ResoniteMod.DebugFunc(() => $"operation: {operation}");
-
-                    return node.TryConnectImpulse(impulse, operation, undoable: true);
-                }).ConfigureAwait(false));
+            return connectionType switch
+            {
+                ConnectionType.Input => node.TryConnectInput(node.GetInput(index), target.GetOutput(targetIndex), allowExplicitCast: false, undoable: true),
+                ConnectionType.Output => target.TryConnectInput(target.GetInput(targetIndex), node.GetOutput(index), allowExplicitCast: false, undoable: true),
+                ConnectionType.InputList => node.TryConnectInput(node.GetInput(index), target.GetOutput(targetIndex), allowExplicitCast: false, undoable: true),
+                ConnectionType.OutputList => target.TryConnectInput(target.GetInput(targetIndex), node.GetOutput(index), allowExplicitCast: false, undoable: true),
+                ConnectionType.Impulse => node.TryConnectImpulse(node.GetImpulse(index), target.GetOperation(targetIndex), undoable: true),
+                ConnectionType.ImpulseList => node.TryConnectImpulse(node.GetImpulse(index), target.GetOperation(targetIndex), undoable: true),
+                ConnectionType.Reference => node.TryConnectReference(node.GetReference(index), target, undoable: true),
+                _ => throw new ArgumentException($"Unsupported connect type: {connectionType}", nameof(connectionType))
+            };
         }
-
-        [McpServerTool(Name = "tryConnectReference"), Description("Attempts to connect a reference to another node.")]
-        public static Task<object?> TryConnectReference(string nodeRefId, int referenceIndex, string targetNodeRefId)
+        // Consolidated connection attempt for inputs, impulses, and references
+        [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node.")]
+        public static Task<object?> TryConnect(string nodeRefId, ConnectionType connectionType, int index, string targetNodeRefId, int targetIndex = 0)
         {
             return HandleAsync(async () =>
-                await UpdateAction(WorkspaceSlot, () =>
+                await UpdateAction(WorkspaceSlot, async () =>
                 {
-                    ResoniteMod.DebugFunc(() => $"Connecting Reference: {nodeRefId}({referenceIndex} <- {targetNodeRefId}");
                     var node = FindNodeInternal(nodeRefId);
-                    ResoniteMod.DebugFunc(() => $"node: {node}");
+                    var target = FindNodeInternal(targetNodeRefId);
 
-                    var targetNode = FindNodeInternal(targetNodeRefId);
-                    ResoniteMod.DebugFunc(() => $"targetNode: {targetNode}");
-
-                    var reference = node.GetReference(referenceIndex);
-                    ResoniteMod.DebugFunc(() => $"reference: {reference}");
-
-                    return node.TryConnectReference(reference, targetNode, undoable: true);
-                }).ConfigureAwait(false));
+                    try
+                    {
+                        return TryConnectInternal(node, connectionType, index, target, targetIndex);
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        ResoniteMod.Warn(ex.ToString());
+                        return TryConnectInternal(target, connectionType, targetIndex, node, index);
+                    }
+                }).ConfigureAwait(false)
+            );
         }
 
         private static PackedElement PackNodeElement(IWorldElement element)
@@ -471,115 +495,29 @@ namespace FluxMcp
             return new PackedElementList(list);
         }
 
-        //[McpServerTool(Name = "getNodeOutput"), Description("Gets the output of a node by index.")]
-        //public static CallToolResult GetNodeOutput(string nodeRefId, int outputIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetOutput(outputIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeInput"), Description("Gets the input of a node by index.")]
-        //public static CallToolResult GetNodeInput(string nodeRefId, int inputIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetInput(inputIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeImpulse"), Description("Gets the impulse of a node by index.")]
-        //public static CallToolResult GetNodeImpulse(string nodeRefId, int impulseIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetImpulse(impulseIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeOperation"), Description("Gets the operation of a node by index.")]
-        //public static CallToolResult GetNodeOperation(string nodeRefId, int operationIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetOperation(operationIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeReference"), Description("Gets the reference of a node by index.")]
-        //public static CallToolResult GetNodeReference(string nodeRefId, int referenceIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetReference(referenceIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeInputList"), Description("Gets the input list of a node by index.")]
-        //public static CallToolResult GetNodeInputList(string nodeRefId, int inputListIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElementList(node.GetInputList(inputListIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeOutputList"), Description("Gets the output list of a node by index.")]
-        //public static CallToolResult GetNodeOutputList(string nodeRefId, int outputListIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElementList(node.GetOutputList(outputListIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeImpulseList"), Description("Gets the impulse list of a node by index.")]
-        //public static CallToolResult GetNodeImpulseList(string nodeRefId, int impulseListIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElementList(node.GetImpulseList(impulseListIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeOperationList"), Description("Gets the operation list of a node by index.")]
-        //public static CallToolResult GetNodeOperationList(string nodeRefId, int operationListIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElementList(node.GetOperationList(operationListIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeGlobalRef"), Description("Gets the global reference of a node by index.")]
-        //public static CallToolResult GetNodeGlobalRef(string nodeRefId, int globalRefIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElement(node.GetGlobalRef(globalRefIndex));
-        //    });
-        //}
-
-        //[McpServerTool(Name = "getNodeGlobalRefList"), Description("Gets the global reference list of a node by index.")]
-        //public static CallToolResult GetNodeGlobalRefList(string nodeRefId, int globalRefListIndex)
-        //{
-        //    return Handle(() =>
-        //    {
-        //        var node = FindNodeInternal(nodeRefId);
-        //        return PackNodeElementList(node.GetGlobalRefList(globalRefListIndex));
-        //    });
-        //}
+        [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index.")]
+        public static object? GetNodeConnection(string nodeRefId, ConnectionType connectionType, int index)
+        {
+            return Handle<object>(() =>
+            {
+                var node = FindNodeInternal(nodeRefId);
+                return connectionType switch
+                {
+                    ConnectionType.Input => PackNodeElement(node.GetInput(index)),
+                    ConnectionType.Output => PackNodeElement(node.GetOutput(index)),
+                    ConnectionType.Impulse => PackNodeElement(node.GetImpulse(index)),
+                    ConnectionType.Operation => PackNodeElement(node.GetOperation(index)),
+                    ConnectionType.Reference => PackNodeElement(node.GetReference(index)),
+                    ConnectionType.InputList => PackNodeElementList(node.GetInputList(index)),
+                    ConnectionType.OutputList => PackNodeElementList(node.GetOutputList(index)),
+                    ConnectionType.ImpulseList => PackNodeElementList(node.GetImpulseList(index)),
+                    ConnectionType.OperationList => PackNodeElementList(node.GetOperationList(index)),
+                    ConnectionType.GlobalRef => PackNodeElement(node.GetGlobalRef(index)),
+                    ConnectionType.GlobalRefList => PackNodeElementList(node.GetGlobalRefList(index)),
+                    _ => throw new ArgumentException($"Unknown connection type: {connectionType}", nameof(connectionType))
+                };
+            });
+        }
 
         [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
         public static object? GetWorldElement(string refId)
@@ -592,12 +530,17 @@ namespace FluxMcp
                 }
 
                 var element = FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId) ?? throw new InvalidOperationException($"No element found with RefID: {refId}");
-                return new PackedElement(element);
+                if (element is ProtoFluxNode node)
+                {
+                    return NodeInfo.Encode(node);
+                }
+
+                return (object?)element;
             });
         }
 
-        [McpServerTool(Name = "getInputValue"), Description("Gets the value of input node")]
-        public static object? GetInputValue(string nodeRefId, int inputIndex)
+        [McpServerTool(Name = "getInputNodeValue"), Description("Gets the value of input node by index")]
+        public static object? GetInputNodeValue(string nodeRefId, int inputIndex)
         {
             return Handle(() =>
             {
@@ -606,27 +549,46 @@ namespace FluxMcp
                 {
                     throw new InvalidOperationException($"Node {nodeRefId} is not an input node.");
                 }
-
                 return inputNode.BoxedValue;
             });
         }
 
-        [McpServerTool(Name = "setInputValue"), Description("Sets the value of input node")]
-        public static object? SetInputValue(string nodeRefId, int inputIndex, object value)
+        [McpServerTool(Name = "setInputNodeValue"), Description("Sets the value of input node")]
+        public static async Task<object?> SetInputNodeValue(string nodeRefId, JsonElement value)
         {
-            return Handle(() =>
+            return await HandleAsync(async () =>
             {
-                var node = FindNodeInternal(nodeRefId);
-                if (node is not IInput inputNode)
+                return await UpdateAction(WorkspaceSlot, () =>
                 {
-                    throw new InvalidOperationException($"Node {nodeRefId} is not an input node.");
-                }
+                    var node = FindNodeInternal(nodeRefId);
+                    if (node is not IInput inputNode)
+                    {
+                        throw new InvalidOperationException($"Node {nodeRefId} is not an input node.");
+                    }
+                    var targetType = inputNode.InputType();
 
-                inputNode.BoxedValue = (object)value;
+                    try
+                    {
+                        if (targetType == typeof(colorX) && !value.TryGetProperty("profile", out var _))
+                        {
+                            inputNode.BoxedValue = (colorX)value.Deserialize<color>(_jsonOptions);
+                        }
+                        else
+                        {
+                            inputNode.BoxedValue = value.Deserialize(targetType, _jsonOptions)!;
+                        }
+                    }
+                    catch (InvalidCastException)
+                    {
+                        throw new InvalidOperationException($"Cannot set input value of {value} into {targetType}");
+                    }
 
-                return inputNode.BoxedValue;
-            });
+                    return inputNode.BoxedValue;
+                }).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        // Consolidated setter; removed all typed Set*InputValue overloads and helper methods.
 
         // Removes leading '[...]' and trailing '<...>' from type names
         private static string CleanTypeName(string name)
@@ -645,6 +607,12 @@ namespace FluxMcp
             if (lt >= 0 && gt == name.Length - 1)
             {
                 name = name.Substring(0, lt);
+            }
+            // remove namespace prefix (up to last '.')
+            var lastDot = name.LastIndexOf('.');
+            if (lastDot >= 0)
+            {
+                name = name.Substring(lastDot + 1);
             }
             return name;
         }
