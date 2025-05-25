@@ -77,6 +77,10 @@ namespace FluxMcp
                         {
                             break;
                         }
+                        catch (ObjectDisposedException)
+                        {
+                            break;
+                        }
 
                         ResoniteMod.Debug($"Received request: {ctx.Request.HttpMethod} {ctx.Request.Url}");
                         _ = Task.Run(() => HandleContextAsync(ctx, cancellationToken), cancellationToken);
