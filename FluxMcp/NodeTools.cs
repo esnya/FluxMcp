@@ -199,7 +199,7 @@ namespace FluxMcp
 
                 parentSlot.RunSynchronously(() =>
                 {
-                    ResoniteMod.Debug("Ceating slot");
+                    ResoniteMod.Debug("Creating slot");
                     slot = parentSlot.AddSlot(type.Name);
                     if (slot == slot.World.LocalUserSpace)
                     {
