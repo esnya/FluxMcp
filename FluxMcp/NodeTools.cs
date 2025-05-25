@@ -2,16 +2,13 @@ using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.ProtoFlux;
 using ModelContextProtocol.Server;
-using ModelContextProtocol;
 using Microsoft.Extensions.AI;
-using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using ResoniteModLoader;
 using System.Threading.Tasks;
-using System.Threading;
 
 namespace FluxMcp
 {
@@ -126,15 +123,15 @@ namespace FluxMcp
                 .Concat(category.Subcategories.SelectMany(GatherAllNodeTypes));
         }
 
-        private static string? FindClosestNodeType(string type)
+        private static string? FindClosestNodeType(string search)
         {
             var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
-            var search = type.ToUpperInvariant();
+            var searchUpper = search.ToUpperInvariant();
             return GatherAllNodeTypes(category)
                 .Select(name => new
                 {
                     Name = name,
-                    Distance = LevenshteinDistance(name.ToUpperInvariant().AsSpan(), search.AsSpan())
+                    Distance = LevenshteinDistance(name.ToUpperInvariant().AsSpan(), searchUpper.AsSpan()),
                 })
                 .OrderBy(x => x.Distance)
                 .Select(x => x.Name)
@@ -348,15 +345,17 @@ namespace FluxMcp
         private static IEnumerable<string> SearchNodeTypeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
         {
             var results = new List<(string Name, int Distance)>();
+            var cleanedSearch = CleanTypeName(search);
+            cleanedSearch = cleanedSearch.ToUpperInvariant();
 
             void Gather(CategoryNode<Type> node)
             {
                 foreach (var name in node.Elements.Select(EncodeType))
                 {
-                    var upper = name.ToUpperInvariant();
-                    var distance = upper.Contains(search)
+                    var cleanedName = CleanTypeName(name).ToUpperInvariant();
+                    var distance = cleanedName.Contains(cleanedSearch)
                         ? 0
-                        : LevenshteinDistance(upper.AsSpan(), search.AsSpan());
+                        : LevenshteinDistance(cleanedName.AsSpan(), cleanedSearch.AsSpan());
                     results.Add((name, distance));
                 }
 
@@ -382,7 +381,7 @@ namespace FluxMcp
             return Handle(() =>
             {
                 var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
-                return SearchNodeTypeInternal(category, CleanTypeName(search).ToUpperInvariant(), maxItems, skip);
+                return SearchNodeTypeInternal(category, search, maxItems, skip);
             });
         }
 
