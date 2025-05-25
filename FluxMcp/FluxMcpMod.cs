@@ -36,7 +36,8 @@ public partial class FluxMcpMod : ResoniteMod
     [AutoRegisterConfigKey]
     private static readonly ModConfigurationKey<int> _portKey = new ModConfigurationKey<int>("Listen port", computeDefault: () => 5000);
 
-    private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
+    private static CancellationTokenSource? _cts;
+    private static Task? _serverTask;
     public static Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
     {
 #if DEBUG
@@ -70,10 +71,11 @@ public partial class FluxMcpMod : ResoniteMod
         var bindAddress = _config?.GetValue(_bindAddressKey) ?? "127.0.0.1";
         var port = _config?.GetValue(_portKey) ?? 5000;
 
-        _httpServer = new McpHttpStreamingServer((transport) => LocalMcpServerBuilder.Build(transport), $"http://{bindAddress}:{port}/");
+        _httpServer = new McpHttpStreamingServer(transport => LocalMcpServerBuilder.Build(transport), $"http://{bindAddress}:{port}/");
 
         Debug("Starting HTTP streaming server...");
-        Task.Run(() => _httpServer.StartAsync(_cts.Token));
+        _cts = new CancellationTokenSource();
+        _serverTask = Task.Run(() => _httpServer.StartAsync(_cts.Token));
     }
 
     private static void StopHttpServer()
@@ -83,7 +85,20 @@ public partial class FluxMcpMod : ResoniteMod
             return;
         }
 
+        try
+        {
+            _cts?.Cancel();
+            _serverTask?.GetAwaiter().GetResult();
+            _cts?.Dispose();
+        }
+        finally
+        {
+            _cts = null;
+            _serverTask = null;
+        }
+
         _httpServer.Stop();
+        _httpServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
         _httpServer = null;
     }
 
