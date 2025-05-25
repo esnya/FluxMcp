@@ -38,7 +38,7 @@ namespace FluxMcp
                 catch (Exception ex)
                 {
                     ResoniteMod.Warn(ex);
-                    var error = ex;
+                    error = ex;
                 }
                 finally
                 {
