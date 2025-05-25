@@ -56,11 +56,16 @@
 		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
 		<PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
 		<PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
-		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="System.Net.ServerSentEvents">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Net.ServerSentEvents.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+
 		<Reference Include="ResoniteModLoader">
 			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
 			<Private>False</Private>

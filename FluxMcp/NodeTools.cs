@@ -92,7 +92,14 @@ namespace FluxMcp
             }
             catch (Exception ex)
             {
-                return new ErrorContent(ex.Message);
+                if (ResoniteMod.IsDebugEnabled())
+                {
+                    return new ErrorContent(ex.Message + "\n" + ex.StackTrace);
+                }
+                else
+                {
+                    return new ErrorContent(ex.Message);
+                }
             }
         }
 
@@ -250,24 +257,31 @@ namespace FluxMcp
             }
         }
 
-        private static CategoryNode<Type> GetProtoFluxNodeCategory(string category)
+        private static CategoryNode<Type> GetProtoFluxNodeCategory(string category = "")
         {
             var fullCategory = "ProtoFlux/Runtimes/Execution/Nodes/" + category;
             ResoniteMod.DebugFunc(() => $"Getting ProtoFlux Node Category {fullCategory}");
             return WorkerInitializer.ComponentLibrary.GetSubcategory(fullCategory);
         }
 
-        [McpServerTool(Name = "listSubCategories"), Description("Search sub categories ('/' separeted)")]
-        public static AIContent ListSubCategories(int maxItems, string category = "", int skip = 0)
+        private static IEnumerable<string> GatherSubcategories(CategoryNode<Type> category, string prefix = "")
+        {
+            ResoniteMod.DebugFunc(() => $"Gathering subcategories for {category.Name} with prefix {prefix}");
+            return category.Subcategories?.SelectMany(sub =>
+            {
+                var subPrefix = prefix + sub.Name + '/';
+                return GatherSubcategories(sub, subPrefix).Prepend(prefix + sub.Name);
+            }) ?? Enumerable.Repeat(prefix + category.Name, 1);
+        }
+
+        [McpServerTool(Name = "getCategories"), Description("Get all ProtoFlux node categories.")]
+        public static object GetCategories()
         {
             return Handle(() =>
             {
-                var list = GetProtoFluxNodeCategory(category).Subcategories.ToList();
-                return new ListResult<string>(
-                    list.Select(x => (category + '/' + x.Name).Replace("//", "/")).Skip(skip).Take(maxItems),
-                    list.Count,
-                    skip
-                );
+                ResoniteMod.Debug("Gathering ProtoFlux node categories");
+                var root = GetProtoFluxNodeCategory();
+                return GatherSubcategories(root);
             });
         }
 
@@ -287,7 +301,7 @@ namespace FluxMcp
 
         private static IEnumerable<string> SearchNodeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
         {
-            return category.Elements.Select(EncodeType).Where(t => t.Contains(search))
+            return category.Elements.Select(EncodeType).Where(t => t.ToUpperInvariant().Contains(search))
                 .Concat(
                     category.Subcategories.SelectMany(sub => SearchNodeInternal(sub, search, maxItems, skip))
                 ).Skip(skip).Take(maxItems);
@@ -299,18 +313,19 @@ namespace FluxMcp
             return Handle(() =>
             {
                 var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
-                return SearchNodeInternal(category, search, maxItems, skip).ToList();
+                return SearchNodeInternal(category, search.ToUpperInvariant(), maxItems, skip).ToList();
             });
         }
 
         [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
-        public static AIContent DeleteNode(string nodeRefId)
+        public static Task<AIContent> DeleteNode(string nodeRefId)
         {
-            return Handle(() =>
-            {
-                FindNodeInternal(nodeRefId).Slot.Destroy();
-                return "done";
-            });
+            return HandleAsync(() => UpdateAction(WorkspaceSlot, () =>
+                {
+                    FindNodeInternal(nodeRefId).Slot.Destroy();
+                    return (object?)"done";
+                })
+            );
         }
 
         [McpServerTool(Name = "tryConnectInput"), Description("Attempts to connect an input to an output.")]

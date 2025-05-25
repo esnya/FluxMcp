@@ -5,6 +5,7 @@ using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using FrooxEngine;
+using Elements.Core;
 
 namespace FluxMcp.Tests;
 
@@ -12,8 +13,8 @@ namespace FluxMcp.Tests;
 public sealed class McpServerTests
 {
     [TestMethod]
-    [Timeout(30000)]
-    public async Task McpServer_ShouldReturnNonEmptyToolsArray()
+    [Timeout(10000)]
+    public async Task McpServer()
     {
         var mod = new FluxMcpMod();
         FluxMcpMod.RegisterHotReloadAction = null;
@@ -22,13 +23,25 @@ public sealed class McpServerTests
 
         mod.OnEngineInit();
 
-        using var tcpClient = new TcpClient();
-        await tcpClient.ConnectAsync("127.0.0.1", 5001);
-        using var networkStream = tcpClient.GetStream();
+        while (!FluxMcpMod.IsServerRunning)
+        {
+            // Console.WriteLine("Waiting for MCP server to start...");
+            await Task.Delay(100);
+        }
 
-        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-
-        var clientTransport = new StreamClientTransport(networkStream, networkStream, loggerFactory);
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Debug);
+        });
+        var clientTransport = new SseClientTransport(
+            new()
+            {
+                Endpoint = new Uri("http://localhost:5000/mcp"),
+                UseStreamableHttp = true,
+            },
+            loggerFactory: loggerFactory
+        );
         var client = await McpClientFactory.CreateAsync(clientTransport);
 
         var tools = await client.ListToolsAsync().ConfigureAwait(false);
@@ -36,35 +49,6 @@ public sealed class McpServerTests
 
         Assert.IsNotNull(tools, "Tools array should not be null.");
         Assert.IsTrue(tools.Count > 0, "Tools array should not be empty.");
-
-        var manager = new CoroutineManager(default!, default!);
-        CoroutineManager.Manager.Value = manager;
-
-        //var engine = new Engine();
-        //var worldManager = new WorldManager();
-        //foreach (var property in typeof(Engine).GetProperties())
-        //{
-        //    if (!property.CanWrite) continue;
-
-        //    if (property.Name == nameof(Engine.Current))
-        //    {
-        //        property.SetValue(null, engine);
-        //    }
-        //    else if (property.Name == nameof(Engine.WorldManager))
-        //    {
-        //        property.SetValue(engine, worldManager);
-        //    }
-        //}
-
-        //var arguments = new Dictionary<string, object?>(){
-        //    { "type", "CallInputNode" },
-        //};
-        //var task = client.CallToolAsync("createNode", arguments: arguments);
-
-        //var n1 = manager.ExecuteWorldQueue(1.0/90);
-        //var n2 = manager.ExecuteWorldQueue(1.0/90);
-        //var res = await task;
-        //Console.WriteLine(res);
 
         await client.DisposeAsync();
 

@@ -36,7 +36,7 @@ public partial class FluxMcpMod : ResoniteMod
     [AutoRegisterConfigKey]
     private static readonly ModConfigurationKey<int> _portKey = new ModConfigurationKey<int>("Listen port", computeDefault: () => 5000);
 
-    private static CancellationTokenSource cts = new CancellationTokenSource();
+    private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
     public static Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
     {
 #if DEBUG
@@ -44,42 +44,47 @@ public partial class FluxMcpMod : ResoniteMod
 #endif
     };
 
-    private static TcpTransport? _tcpServer;
+    public static bool IsServerRunning => _httpServer?.IsRunning ?? false;
 
-    private static void RestartTcpServer()
+
+    private static McpHttpStreamingServer? _httpServer;
+
+    private static void RestartServer()
     {
-        StopTcpServer();
+        StopHttpServer();
 
         if (_config?.GetValue(_enabledKey) != false)
         {
-            StartTcpServer();
+            StartHttpServer();
         }
     }
 
-    private static void StartTcpServer()
+    private static void StartHttpServer()
     {
-        if (_tcpServer != null)
+        if (_httpServer != null)
         {
             return;
         }
 
-        Debug("Starting TCP server...");
+        Debug("Creating HTTP streaming server...");
         var bindAddress = _config?.GetValue(_bindAddressKey) ?? "127.0.0.1";
-        var port = _config?.GetValue(_portKey) ?? 5001;
+        var port = _config?.GetValue(_portKey) ?? 5000;
 
-        _tcpServer = new TcpTransport(bindAddress, port);
-        Task.Run(() => _tcpServer.StartAsync(cts.Token));
+        _httpServer = new McpHttpStreamingServer((transport) => LocalMcpServerBuilder.Build(transport), $"http://{bindAddress}:{port}/");
+
+        Debug("Starting HTTP streaming server...");
+        Task.Run(() => _httpServer.StartAsync(_cts.Token));
     }
 
-    private static void StopTcpServer()
+    private static void StopHttpServer()
     {
-        if (_tcpServer == null)
+        if (_httpServer == null)
         {
             return;
         }
 
-        _tcpServer.Stop();
-        _tcpServer = null;
+        _httpServer.Stop();
+        _httpServer = null;
     }
 
     public override void OnEngineInit()
@@ -102,28 +107,28 @@ public partial class FluxMcpMod : ResoniteMod
             {
                 if (enabled)
                 {
-                    StartTcpServer();
+                    StartHttpServer();
                 }
                 else
                 {
-                    StopTcpServer();
+                    StopHttpServer();
                 }
             }
         };
 
-        _bindAddressKey.OnChanged += _ => RestartTcpServer();
-        _portKey.OnChanged += _ => RestartTcpServer();
+        _bindAddressKey.OnChanged += _ => RestartServer();
+        _portKey.OnChanged += _ => RestartServer();
 
         if (_config?.GetValue(_enabledKey) != false)
         {
-            StartTcpServer();
+            StartHttpServer();
         }
     }
 
 #if DEBUG
     public static void BeforeHotReload()
     {
-        StopTcpServer();
+        StopHttpServer();
     }
 
     public static void OnHotReload(ResoniteMod modInstance)
