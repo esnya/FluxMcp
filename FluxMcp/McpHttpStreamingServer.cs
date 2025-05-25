@@ -73,7 +73,7 @@ namespace FluxMcp
                         {
                             ctx = await _listener.GetContextAsync().ConfigureAwait(false);
                         }
-                        catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
+                        catch (HttpListenerException)
                         {
                             break;
                         }
@@ -136,7 +136,14 @@ namespace FluxMcp
                 ResoniteMod.DebugFunc(() => $"Request body written: {bodyWritten}");
                 await response.OutputStream.FlushAsync(cancellationToken).ConfigureAwait(false);
 
-                response.Close();
+                try
+                {
+                    response.Close();
+                }
+                catch (HttpListenerException ex)
+                {
+                    ResoniteMod.Warn($"Error closing response: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {

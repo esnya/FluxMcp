@@ -37,7 +37,7 @@ public sealed class McpServerTests
         var clientTransport = new SseClientTransport(
             new()
             {
-                Endpoint = new Uri("http://localhost:5000/mcp"),
+                Endpoint = new Uri("http://127.0.0.1:5000/mcp"),
                 UseStreamableHttp = true,
             },
             loggerFactory: loggerFactory

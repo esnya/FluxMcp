@@ -36,33 +36,42 @@ public sealed class StatelessHttpServerTransport : ITransport
 
         public async ValueTask<bool> RunAsync(CancellationToken cancellationToken)
         {
-            var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), cancellationToken: cancellationToken).ConfigureAwait(false);
-            await OnMessageReceivedAsync(message, cancellationToken).ConfigureAwait(false);
-
-            if (_pendingRequest.Id is null)
+            try
             {
-                return false;
-            }
+                var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), cancellationToken: cancellationToken).ConfigureAwait(false);
+                await OnMessageReceivedAsync(message, cancellationToken).ConfigureAwait(false);
 
-            var channel = _messages.Reader;
-            bool done = false;
-            while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false) && !done)
-            {
-                while (channel.TryRead(out var mesasge))
+                if (_pendingRequest.Id is null)
                 {
-                    await _httpBodies.Output.WriteAsync(_messageEventPrefix, cancellationToken).ConfigureAwait(false);
-                    await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    await _httpBodies.Output.WriteAsync(_messageEventSuffix, cancellationToken).ConfigureAwait(false);
+                    return false;
+                }
 
-                    if (mesasge is JsonRpcMessageWithId response && response.Id == _pendingRequest)
+                var channel = _messages.Reader;
+                bool done = false;
+
+                while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false) && !done)
+                {
+                    while (channel.TryRead(out var mesasge))
                     {
-                        done = true;
-                        break;
+                        await _httpBodies.Output.WriteAsync(_messageEventPrefix, cancellationToken).ConfigureAwait(false);
+                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        await _httpBodies.Output.WriteAsync(_messageEventSuffix, cancellationToken).ConfigureAwait(false);
+
+                        if (mesasge is JsonRpcMessageWithId response && response.Id == _pendingRequest)
+                        {
+                            done = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            return true;
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                // Operation was cancelled, just exit gracefully.
+                return false;
+            }
         }
 
         public async Task SendMessageAsync(JsonRpcMessage message, CancellationToken cancellationToken = default)
