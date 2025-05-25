@@ -345,7 +345,7 @@ namespace FluxMcp
             });
         }
 
-        private static IEnumerable<string> SearchNodeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
+        private static IEnumerable<string> SearchNodeTypeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)
         {
             var results = new List<(string Name, int Distance)>();
 
@@ -376,13 +376,13 @@ namespace FluxMcp
                 .Select(r => r.Name);
         }
 
-        [McpServerTool(Name = "searchNode"), Description("Search node in all category.")]
-        public static object? SearchNode(string search, int maxItems, int skip = 0)
+        [McpServerTool(Name = "searchNodeType"), Description("Search node in all category.")]
+        public static object? SearchNodeType(string search, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
                 var category = WorkerInitializer.ComponentLibrary.GetSubcategory("ProtoFlux/Runtimes/Execution/Nodes");
-                return SearchNodeInternal(category, search.ToUpperInvariant(), maxItems, skip).ToList();
+                return SearchNodeTypeInternal(category, CleanTypeName(search).ToUpperInvariant(), maxItems, skip);
             });
         }
 
@@ -627,6 +627,27 @@ namespace FluxMcp
 
                 return inputNode.BoxedValue;
             });
+        }
+
+        // Removes leading '[...]' and trailing '<...>' from type names
+        private static string CleanTypeName(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            if (name.StartsWith("[", StringComparison.Ordinal))
+            {
+                var endBracket = name.IndexOf(']');
+                if (endBracket >= 0)
+                {
+                    name = name.Substring(endBracket + 1);
+                }
+            }
+            var lt = name.LastIndexOf('<');
+            var gt = name.LastIndexOf('>');
+            if (lt >= 0 && gt == name.Length - 1)
+            {
+                name = name.Substring(0, lt);
+            }
+            return name;
         }
     }
 
