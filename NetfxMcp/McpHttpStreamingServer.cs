@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NetfxMcp
 {
-    internal class DuplexPipe : IDuplexPipe
+    internal sealed class DuplexPipe : IDuplexPipe
     {
         public PipeReader Input { get; private set; }
 

@@ -106,8 +106,9 @@ public sealed class StatelessHttpServerTransport : ITransport
 
         public ChannelReader<JsonRpcMessage> MessageReader => throw new NotSupportedException("JsonRpcMessage.RelatedTransport should only be used for sending messages.");
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
+            return default;
         }
 
     }
@@ -126,13 +127,21 @@ public sealed class StatelessHttpServerTransport : ITransport
     public async Task<bool> HandlePostRequest(IDuplexPipe httpBodies, CancellationToken cancellationToken)
     {
         using var postCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
-        await using var postTransport = new PostTransport(this, httpBodies);
-        return await postTransport.RunAsync(postCts.Token).ConfigureAwait(false);
+        var postTransport = new PostTransport(this, httpBodies);
+        try
+        {
+            return await postTransport.RunAsync(postCts.Token).ConfigureAwait(false);
+        }
+        finally
+        {
+            await postTransport.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         _disposeCts.Dispose();
+        return default;
     }
 
     public Task SendMessageAsync(JsonRpcMessage message, CancellationToken cancellationToken = default)

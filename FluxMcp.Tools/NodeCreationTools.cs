@@ -14,9 +14,9 @@ namespace FluxMcp.Tools;
 public static class NodeCreationTools
 {
     [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. For generic types, use specific types like <float>, <int>, <bool>, <float3>, <color> instead of <T>. Use searchNodeType to find valid node types. Dimension of position: (Right, Up, Forward).")]
-    public static Task<object?> CreateNode(string type, float3 position)
+    public static async Task<object?> CreateNode(string type, float3 position)
     {
-        return NodeToolHelpers.HandleAsync(async () =>
+        var result = await NodeToolHelpers.HandleAsync(async () =>
         {
             if (string.IsNullOrEmpty(type))
             {
@@ -57,18 +57,20 @@ public static class NodeCreationTools
             }
 
             return await CreateNodeInternal(decodedType, position).ConfigureAwait(false);
-        });
+        }).ConfigureAwait(false);
+        return result;
     }
 
     [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
-    public static Task<object?> DeleteNode(string nodeRefId)
+    public static async Task<object?> DeleteNode(string nodeRefId)
     {
-        return NodeToolHelpers.HandleAsync(() => NodeToolHelpers.UpdateAction(NodeToolHelpers.WorkspaceSlot, () =>
+        var result = await NodeToolHelpers.HandleAsync(() => NodeToolHelpers.UpdateAction(NodeToolHelpers.WorkspaceSlot, () =>
             {
                 NodeLookupTools.FindNodeInternal(nodeRefId).Slot.Destroy();
                 return (object?)"done";
             }
-        ));
+        )).ConfigureAwait(false);
+        return result;
     }
 
     private static async Task<ProtoFluxNode> CreateNodeInternal(Type type, float3 position)
