@@ -6,7 +6,7 @@ using ResoniteModLoader;
 
 namespace FluxMcp;
 
-internal static class McpServerBuilder
+public static class McpServerBuilder
 {
     public static IMcpServer Build(ITransport transport)
     {
