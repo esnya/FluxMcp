@@ -25,35 +25,8 @@ public static class NodeCreationTools
                 throw new ArgumentException("Type cannot be null or empty.", nameof(type));
             }
 
-            if (type.Contains("<>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<>', use '<T>' instead.");
-                throw new ArgumentException("Invalid generic type format. Do not use '<>', use '<T>' instead.", nameof(type));
-            }
+            ValidateGenericTypeFormat(type);
 
-            if (type.Contains("<,>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<,>', use '<T1, T2>' instead.");
-                throw new ArgumentException("Invalid generic type format. Do not use '<,>', use '<T1, T2>' instead.", nameof(type));
-            }
-
-            if (type.Contains("<T>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}.");
-                throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>) instead of <T>", nameof(type));
-            }
-
-            if (type.Contains("<T1, T2>"))
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}.");
-                throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3, float3>) instead of <T1, T2>", nameof(type));
-            }
-
-            if (type.Contains("`") )
-            {
-                ResoniteMod.Warn($"Invalid generic type format {type}.");
-                throw new ArgumentException("Invalid generic type format. Use '<T>' instead (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>)", nameof(type));
-            }
             const string bindingPrefix = "[ProtoFluxBindings]";
             if (!type.StartsWith(bindingPrefix, StringComparison.Ordinal))
             {
@@ -195,5 +168,34 @@ public static class NodeCreationTools
             .OrderBy(x => x.Distance)
             .Select(x => x.Name)
             .FirstOrDefault();
+    }
+
+    private static void ValidateGenericTypeFormat(string type)
+    {
+        if (type.Contains("<>"))
+        {
+            ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<>', use '<T>' instead.");
+            throw new ArgumentException("Invalid generic type format. Do not use '<>', use '<T>' instead.", nameof(type));
+        }
+        if (type.Contains("<,>"))
+        {
+            ResoniteMod.Warn($"Invalid generic type format {type}. Do not use '<,>', use '<T1, T2>' instead.");
+            throw new ArgumentException("Invalid generic type format. Do not use '<,>', use '<T1, T2>' instead.", nameof(type));
+        }
+        if (type.Contains("<T>"))
+        {
+            ResoniteMod.Warn($"Invalid generic type format {type}.");
+            throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>) instead of <T>", nameof(type));
+        }
+        if (type.Contains("<T1, T2>"))
+        {
+            ResoniteMod.Warn($"Invalid generic type format {type}.");
+            throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3, float3>) instead of <T1, T2>", nameof(type));
+        }
+        if (type.Contains("`"))
+        {
+            ResoniteMod.Warn($"Invalid generic type format {type}.");
+            throw new ArgumentException("Invalid generic type format. Use '<T>' instead (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>)", nameof(type));
+        }
     }
 }
