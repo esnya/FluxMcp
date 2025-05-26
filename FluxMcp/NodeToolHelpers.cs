@@ -22,38 +22,23 @@ internal static class NodeToolHelpers
     internal static async Task<T> UpdateAction<T>(Slot slot, Func<T> action)
     {
         T result = default!;
-        var done = false;
-        Exception? error = null;
+        var completionSource = new TaskCompletionSource<T>();
 
         slot.RunSynchronously(() =>
         {
             try
             {
                 result = action();
+                completionSource.SetResult(result);
             }
             catch (Exception ex)
             {
                 ResoniteMod.Warn(ex);
-                error = ex;
-            }
-            finally
-            {
-                done = true;
+                completionSource.SetException(ex);
             }
         });
 
-        while (!done && error == null)
-        {
-            ResoniteMod.Debug("Waiting slot creation");
-            await Task.Delay(100).ConfigureAwait(false);
-        }
-
-        if (error != null)
-        {
-            throw error;
-        }
-
-        return result;
+        return await completionSource.Task.ConfigureAwait(false);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
