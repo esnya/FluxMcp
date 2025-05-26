@@ -364,7 +364,7 @@ namespace FluxMcp
         }
 
         [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
-        public static object? ListNodeType(string category, int maxItems, int skip = 0)
+        public static object? ListNodeTypesInCategory(string category, int maxItems, int skip = 0)
         {
             return Handle(() =>
             {
