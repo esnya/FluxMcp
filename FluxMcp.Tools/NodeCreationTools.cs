@@ -1,7 +1,6 @@
 using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.ProtoFlux;
-using FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes.Actions;
 using ModelContextProtocol.Server;
 using ResoniteModLoader;
 using System;
@@ -9,7 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FluxMcp;
+namespace FluxMcp.Tools;
 
 [McpServerToolType]
 public static class NodeCreationTools
@@ -57,7 +56,7 @@ public static class NodeCreationTools
                 throw new ArgumentException(message);
             }
 
-            return NodeInfo.Encode(await CreateNodeInternal(decodedType, position).ConfigureAwait(false));
+            return await CreateNodeInternal(decodedType, position).ConfigureAwait(false);
         });
     }
 

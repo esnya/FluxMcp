@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>acbf9e02-cfec-4359-8a28-51e86e95dc00</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>NetfxMcp</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)INetfxMcpLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)McpHttpStreamingServer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)McpServerBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StatelessHttpServerTransport.cs" />
+  </ItemGroup>
+</Project>

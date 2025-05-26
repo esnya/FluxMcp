@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp", "FluxMcp/FluxMcp.csproj", "{5A9FE48E-D613-4236-8214-80480B1371B3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Tools", "FluxMcp.Tools/FluxMcp.Tools.csproj", "{82837CB8-7BD7-413C-9E6B-56193B333A38}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Server", "FluxMcp.Server/FluxMcp.Server.csproj", "{D94D912A-B20F-41FB-AD92-3D507177560E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp", "FluxMcp\FluxMcp.csproj", "{5A9FE48E-D613-4236-8214-80480B1371B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Tests", "FluxMcp.Tests\FluxMcp.Tests.csproj", "{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "FluxMcp.Tools", "FluxMcp.Tools\FluxMcp.Tools.shproj", "{F71DEEC3-9CAB-408C-BA61-0951F0D5ABEA}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NetfxMcp", "NetfxMcp\NetfxMcp.shproj", "{ACBF9E02-CFEC-4359-8A28-51E86E95DC00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,32 +32,8 @@ Global
 		{5A9FE48E-D613-4236-8214-80480B1371B3}.Release|x64.ActiveCfg = Release|Any CPU
 		{5A9FE48E-D613-4236-8214-80480B1371B3}.Release|x64.Build.0 = Release|Any CPU
 		{5A9FE48E-D613-4236-8214-80480B1371B3}.Release|x86.ActiveCfg = Release|Any CPU
-                {5A9FE48E-D613-4236-8214-80480B1371B3}.Release|x86.Build.0 = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|x64.ActiveCfg = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|x64.Build.0 = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|x86.ActiveCfg = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Debug|x86.Build.0 = Debug|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|Any CPU.Build.0 = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x64.ActiveCfg = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x64.Build.0 = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x86.ActiveCfg = Release|Any CPU
-                {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x86.Build.0 = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x64.ActiveCfg = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x64.Build.0 = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x86.ActiveCfg = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x86.Build.0 = Debug|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|Any CPU.Build.0 = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x64.ActiveCfg = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x64.Build.0 = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x86.ActiveCfg = Release|Any CPU
-                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x86.Build.0 = Release|Any CPU
-                {B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A9FE48E-D613-4236-8214-80480B1371B3}.Release|x86.Build.0 = Release|Any CPU
+		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|x64.Build.0 = Debug|Any CPU
@@ -72,5 +48,16 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B668A805-75FA-4576-9C07-63AD080FBCEF}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		FluxMcp.Tools\FluxMcp.Tools.projitems*{5a9fe48e-d613-4236-8214-80480b1371b3}*SharedItemsImports = 5
+		NetfxMcp\NetfxMcp.projitems*{5a9fe48e-d613-4236-8214-80480b1371b3}*SharedItemsImports = 5
+		NetfxMcp\NetfxMcp.projitems*{acbf9e02-cfec-4359-8a28-51e86e95dc00}*SharedItemsImports = 13
+		FluxMcp.Server\FluxMcp.Server.projitems*{b569ea5f-177d-4116-a011-e3e8af6bd5df}*SharedItemsImports = 5
+		FluxMcp.Tools\FluxMcp.Tools.projitems*{b569ea5f-177d-4116-a011-e3e8af6bd5df}*SharedItemsImports = 5
+		FluxMcp.Tools\FluxMcp.Tools.projitems*{f71deec3-9cab-408c-ba61-0951f0d5abea}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

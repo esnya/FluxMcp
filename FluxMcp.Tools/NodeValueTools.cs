@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Elements.Core;
 
-namespace FluxMcp;
+namespace FluxMcp.Tools;
 
 [McpServerToolType]
 public static class NodeValueTools

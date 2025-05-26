@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using Elements.Core;
 
-namespace FluxMcp;
+namespace FluxMcp.Tools;
 
 [McpServerToolType]
 public static class NodeLookupTools
@@ -15,7 +15,7 @@ public static class NodeLookupTools
     [McpServerTool(Name = "findNode"), Description("Finds a node by its reference ID.")]
     public static object? FindNode(string reference)
     {
-        return NodeToolHelpers.Handle(() => NodeInfo.Encode(FindNodeInternal(reference)));
+        return NodeToolHelpers.Handle(() => FindNodeInternal(reference));
     }
 
     internal static ProtoFluxNode FindNodeInternal(string reference)
@@ -51,16 +51,11 @@ public static class NodeLookupTools
     }
 
     [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
-    public static object? ListNodeTypesInCategory(string category, int maxItems, int skip = 0)
+    public static object? ListNodeTypesInCategory(string category)
     {
         return NodeToolHelpers.Handle(() =>
         {
-            var categoryNode = GetProtoFluxNodeCategory(category);
-            return new ListResult<string>(
-                categoryNode.Elements.Select(NodeToolHelpers.EncodeType).Skip(skip).Take(maxItems),
-                categoryNode.ElementCount,
-                skip
-            );
+            return GetProtoFluxNodeCategory(category).Elements.Select(NodeToolHelpers.EncodeType);
         });
     }
 
@@ -85,11 +80,6 @@ public static class NodeLookupTools
             }
 
             var element = NodeToolHelpers.FocusedWorld.ReferenceController.GetObjectOrNull(parsedRefId) ?? throw new InvalidOperationException($"No element found with RefID: {refId}");
-            if (element is ProtoFluxNode node)
-            {
-                return NodeInfo.Encode(node);
-            }
-
             return (object?)element;
         });
     }
@@ -108,14 +98,14 @@ public static class NodeLookupTools
         if (category.ElementCount == 0 && (subcategories == null || subcategories.Count == 0))
         {
             ResoniteMod.DebugFunc(() => $"No elements in category {category.Name}");
-            return System.Linq.Enumerable.Empty<string>();
+            return Enumerable.Empty<string>();
         }
 
         return subcategories?.SelectMany(sub =>
             {
                 var subPrefix = prefix + sub.Name + '/';
                 return GatherSubcategories(sub, subPrefix).Prepend(prefix + sub.Name);
-            }) ?? System.Linq.Enumerable.Repeat(prefix + category.Name, 1);
+            }) ?? Enumerable.Repeat(prefix + category.Name, 1);
     }
 
     private static System.Collections.Generic.IEnumerable<string> SearchNodeTypeInternal(CategoryNode<Type> category, string search, int maxItems, int skip = 0)

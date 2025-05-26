@@ -1,122 +1,85 @@
-using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.ProtoFlux;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace FluxMcp;
+namespace FluxMcp.Tools;
 
-public class NodeInfo
+public static class NodeSerialization
 {
-    public string RefId { get; set; }
-    public string NodeType { get; set; }
-    public string NodeName { get; set; }
-    public int NodeInputCount { get; set; }
-    public int NodeInputListCount { get; set; }
-    public int NodeOutputCount { get; set; }
-    public int NodeOutputListCount { get; set; }
-    public int NodeImpulseCount { get; set; }
-    public int NodeImpulseListCount { get; set; }
-    public int NodeOperationCount { get; set; }
-    public int NodeOperationListCount { get; set; }
-    public int NodeReferenceCount { get; set; }
-    public int NodeGlobalRefCount { get; set; }
-    public int NodeGlobalRefListCount { get; set; }
-
-    public NodeInfo(string refId, string nodeType, string nodeName, int nodeInputCount, int nodeInputListCount,
-                    int nodeOutputCount, int nodeOutputListCount, int nodeImpulseCount, int nodeImpulseListCount,
-                    int nodeOperationCount, int nodeOperationListCount, int nodeReferenceCount,
-                    int nodeGlobalRefCount, int nodeGlobalRefListCount)
+    public static void RegisterConverters(JsonSerializerOptions options)
     {
-        RefId = refId;
-        NodeType = nodeType;
-        NodeName = nodeName;
-        NodeInputCount = nodeInputCount;
-        NodeInputListCount = nodeInputListCount;
-        NodeOutputCount = nodeOutputCount;
-        NodeOutputListCount = nodeOutputListCount;
-        NodeImpulseCount = nodeImpulseCount;
-        NodeImpulseListCount = nodeImpulseListCount;
-        NodeOperationCount = nodeOperationCount;
-        NodeOperationListCount = nodeOperationListCount;
-        NodeReferenceCount = nodeReferenceCount;
-        NodeGlobalRefCount = nodeGlobalRefCount;
-        NodeGlobalRefListCount = nodeGlobalRefListCount;
+        if (options == null) throw new ArgumentNullException(nameof(options));
+
+        options.Converters.Add(new WorldElementConverter());
+        options.Converters.Add(new ProtoFluxNodeConverter());
+    }
+}
+
+public class WorldElementConverter : JsonConverter<IWorldElement>
+{
+    public override IWorldElement? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotSupportedException("Deserialization of IWorldElement is not supported.");
     }
 
-    public static NodeInfo Encode(ProtoFluxNode node)
+    internal static void WriteFields(Utf8JsonWriter writer, IWorldElement element)
     {
-        if (node is null)
+        writer.WriteString("refId", element.ReferenceID.ToString());
+        writer.WriteString("name", element.Name);
+        writer.WriteString("type", element.GetType().Name);
+    }
+
+    public override void Write(Utf8JsonWriter writer, IWorldElement value, JsonSerializerOptions options)
+    {
+        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        writer.WriteStartObject();
+
+        WriteFields(writer, value);
+
+        var parent = value.Parent;
+        if (parent != null)
         {
-            throw new ArgumentNullException(nameof(node));
+            writer.WriteStartObject("parent");
+            WriteFields(writer, parent);
+            writer.WriteEndObject();
         }
 
-        return new NodeInfo(
-            node.ReferenceID.ToString(),
-            NodeToolHelpers.EncodeType(node.GetType()),
-            node.Name,
-            node.NodeInputCount,
-            node.NodeInputListCount,
-            node.NodeOutputCount,
-            node.NodeOutputListCount,
-            node.NodeImpulseCount,
-            node.NodeImpulseListCount,
-            node.NodeOperationCount,
-            node.NodeOperationListCount,
-            node.NodeReferenceCount,
-            node.NodeGlobalRefCount,
-            node.NodeGlobalRefListCount
-        );
+        writer.WriteEndObject();
     }
 }
 
-public class PackedElement
+public class ProtoFluxNodeConverter : JsonConverter<ProtoFluxNode>
 {
-    public string RefId { get; set; }
-    public string Name { get; set; }
-    public string Type { get; set; }
-    public string? ParentRefId { get; set; }
-
-    public PackedElement(IWorldElement element)
+    public override ProtoFluxNode? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (element is null) throw new ArgumentNullException(nameof(element));
-
-        RefId = element.ReferenceID.ToString();
-        Name = element.Name;
-        Type = element.GetType().Name;
-        ParentRefId = element.Parent?.ReferenceID.ToString();
+        throw new NotSupportedException("Deserialization of ProtoFluxNode is not supported.");
     }
-}
 
-public class PackedElementList
-{
-    public string RefId { get; set; }
-    public string Name { get; set; }
-    public string Type { get; set; }
-    public IReadOnlyCollection<PackedElement> Elements { get; }
-
-    public PackedElementList(ISyncList list)
+    public override void Write(Utf8JsonWriter writer, ProtoFluxNode node, JsonSerializerOptions options)
     {
-        if (list == null) throw new ArgumentNullException(nameof(list));
+        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (node == null) throw new ArgumentNullException(nameof(node));
 
-        RefId = list.ReferenceID.ToString();
-        Name = list.Name;
-        Type = list.GetType().Name;
-        Elements = list.Elements.Cast<IWorldElement>().Select(e => new PackedElement(e)).ToList().AsReadOnly();
-    }
-}
+        writer.WriteStartObject();
 
-public class ListResult<T>
-{
-    public IEnumerable<T> Items { get; }
-    public int TotalCount { get; }
-    public int Skip { get; }
+        WorldElementConverter.WriteFields(writer, node);
 
-    public ListResult(IEnumerable<T> items, int totalCount, int skip = 0)
-    {
-        Items = items ?? throw new ArgumentNullException(nameof(items));
-        TotalCount = totalCount;
-        Skip = skip;
+        writer.WriteNumber("nodeInputCount", node.NodeInputCount);
+        writer.WriteNumber("nodeInputListCount", node.NodeInputListCount);
+        writer.WriteNumber("nodeOutputCount", node.NodeOutputCount);
+        writer.WriteNumber("nodeOutputListCount", node.NodeOutputListCount);
+        writer.WriteNumber("nodeImpulseCount", node.NodeImpulseCount);
+        writer.WriteNumber("nodeImpulseListCount", node.NodeImpulseListCount);
+        writer.WriteNumber("nodeOperationCount", node.NodeOperationCount);
+        writer.WriteNumber("nodeOperationListCount", node.NodeOperationListCount);
+        writer.WriteNumber("nodeReferenceCount", node.NodeReferenceCount);
+        writer.WriteNumber("nodeGlobalRefCount", node.NodeGlobalRefCount);
+        writer.WriteNumber("nodeGlobalRefListCount", node.NodeGlobalRefListCount);
+        writer.WriteEndObject();
     }
 }

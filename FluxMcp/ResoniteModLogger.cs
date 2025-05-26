@@ -1,9 +1,10 @@
 using System;
 using ResoniteModLoader;
+using NetfxMcp;
 
 namespace FluxMcp;
 
-public class ResoniteLogger : IFluxLogger
+public class ResoniteLogger : INetfxMcpLogger
 {
     public void Debug(string message) => ResoniteMod.Debug(message);
     public void Warn(string message) => ResoniteMod.Warn(message);

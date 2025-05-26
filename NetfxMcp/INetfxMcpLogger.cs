@@ -1,7 +1,7 @@
 using System;
-namespace FluxMcp;
+namespace NetfxMcp;
 
-public interface IFluxLogger
+public interface INetfxMcpLogger
 {
     void Debug(string message);
     void Warn(string message);

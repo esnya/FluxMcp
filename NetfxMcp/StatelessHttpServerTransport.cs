@@ -10,10 +10,16 @@ using System.Runtime.CompilerServices;
 using System.Net.ServerSentEvents;
 using System.Text;
 
-namespace FluxMcp;
+namespace NetfxMcp;
 
 public sealed class StatelessHttpServerTransport : ITransport
 {
+    public static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+
     internal sealed class PostTransport : ITransport
     {
         private readonly Channel<JsonRpcMessage> _messages = Channel.CreateBounded<JsonRpcMessage>(new BoundedChannelOptions(1)
@@ -38,7 +44,7 @@ public sealed class StatelessHttpServerTransport : ITransport
         {
             try
             {
-                var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), cancellationToken: cancellationToken).ConfigureAwait(false);
+                var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), JsonOptions, cancellationToken).ConfigureAwait(false);
                 await OnMessageReceivedAsync(message, cancellationToken).ConfigureAwait(false);
 
                 if (_pendingRequest.Id is null)
@@ -54,7 +60,7 @@ public sealed class StatelessHttpServerTransport : ITransport
                     while (channel.TryRead(out var mesasge))
                     {
                         await _httpBodies.Output.WriteAsync(_messageEventPrefix, cancellationToken).ConfigureAwait(false);
-                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, JsonOptions, cancellationToken).ConfigureAwait(false);
                         await _httpBodies.Output.WriteAsync(_messageEventSuffix, cancellationToken).ConfigureAwait(false);
 
                         if (mesasge is JsonRpcMessageWithId response && response.Id == _pendingRequest)

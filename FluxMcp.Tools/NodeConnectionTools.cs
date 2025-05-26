@@ -6,7 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace FluxMcp;
+namespace FluxMcp.Tools;
 
 [McpServerToolType]
 public static class NodeConnectionTools
@@ -56,17 +56,17 @@ public static class NodeConnectionTools
             var node = NodeLookupTools.FindNodeInternal(nodeRefId);
             return connectionType switch
             {
-                ConnectionType.Input => PackNodeElement(node.GetInput(index)),
-                ConnectionType.Output => PackNodeElement(node.GetOutput(index)),
-                ConnectionType.Impulse => PackNodeElement(node.GetImpulse(index)),
-                ConnectionType.Operation => PackNodeElement(node.GetOperation(index)),
-                ConnectionType.Reference => PackNodeElement(node.GetReference(index)),
-                ConnectionType.InputList => PackNodeElementList(node.GetInputList(index)),
-                ConnectionType.OutputList => PackNodeElementList(node.GetOutputList(index)),
-                ConnectionType.ImpulseList => PackNodeElementList(node.GetImpulseList(index)),
-                ConnectionType.OperationList => PackNodeElementList(node.GetOperationList(index)),
-                ConnectionType.GlobalRef => PackNodeElement(node.GetGlobalRef(index)),
-                ConnectionType.GlobalRefList => PackNodeElementList(node.GetGlobalRefList(index)),
+                ConnectionType.Input => node.GetInput(index),
+                ConnectionType.Output => node.GetOutput(index),
+                ConnectionType.Impulse => node.GetImpulse(index),
+                ConnectionType.Operation => node.GetOperation(index),
+                ConnectionType.Reference => node.GetReference(index),
+                ConnectionType.InputList => node.GetInputList(index),
+                ConnectionType.OutputList => node.GetOutputList(index),
+                ConnectionType.ImpulseList => node.GetImpulseList(index),
+                ConnectionType.OperationList => node.GetOperationList(index),
+                ConnectionType.GlobalRef => node.GetGlobalRef(index),
+                ConnectionType.GlobalRefList => node.GetGlobalRefList(index),
                 _ => throw new ArgumentException($"Unknown connection type: {connectionType}", nameof(connectionType))
             };
         });
@@ -87,7 +87,4 @@ public static class NodeConnectionTools
         };
     }
 
-    private static PackedElement PackNodeElement(IWorldElement element) => new(element);
-
-    private static PackedElementList PackNodeElementList(ISyncList list) => new(list);
 }

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ResoniteModLoader;
 using System.Threading;
-
+using NetfxMcp;
 
 #if DEBUG
 using ResoniteHotReloadLib;
@@ -72,7 +72,7 @@ public partial class FluxMcpMod : ResoniteMod
         var port = _config?.GetValue(_portKey) ?? 5000;
 
         var logger = new ResoniteLogger();
-        _httpServer = new McpHttpStreamingServer(logger, transport => McpServerBuilder.Build(logger, transport, typeof(NodeToolHelpers).Assembly), $"http://{bindAddress}:{port}/");
+        _httpServer = new McpHttpStreamingServer(logger, transport => McpServerBuilder.Build(logger, transport, typeof(Tools.NodeToolHelpers).Assembly), $"http://{bindAddress}:{port}/");
 
         Debug("Starting HTTP streaming server...");
         _cts = new CancellationTokenSource();
@@ -112,6 +112,7 @@ public partial class FluxMcpMod : ResoniteMod
 #if DEBUG
         RegisterHotReloadAction?.Invoke(modInstance);
 #endif
+        Tools.NodeSerialization.RegisterConverters(StatelessHttpServerTransport.JsonOptions);
 
         _config = modInstance?.GetConfiguration();
         Debug($"Config initialized: {_config != null}");

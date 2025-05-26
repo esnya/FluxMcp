@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace FluxMcp
+namespace NetfxMcp
 {
     internal class DuplexPipe : IDuplexPipe
     {
@@ -31,11 +31,11 @@ namespace FluxMcp
 
         private readonly IMcpServer _mcpServer;
         private readonly HttpListener _listener = new HttpListener();
-        private readonly IFluxLogger _logger;
+        private readonly INetfxMcpLogger _logger;
 
         public bool IsRunning => _listener.IsListening;
 
-        public McpHttpStreamingServer(IFluxLogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
+        public McpHttpStreamingServer(INetfxMcpLogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
         {
             if (serverBuilder is null)
             {

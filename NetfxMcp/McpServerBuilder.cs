@@ -1,13 +1,15 @@
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+
+using ResoniteModLoader;
 using System;
 using System.Reflection;
 
-namespace FluxMcp;
+namespace NetfxMcp;
 
 public static class McpServerBuilder
 {
-    public static IMcpServer Build(IFluxLogger logger, ITransport transport, Assembly toolsAssembly)
+    public static IMcpServer Build(INetfxMcpLogger logger, ITransport transport, Assembly toolsAssembly)
     {
         logger.Debug("Starting to build MCP Server");
 
@@ -57,7 +59,6 @@ public static class McpServerBuilder
                     ToolCollection = toolCollection
                 }
             },
-            SerializerOptionsProvider = new CustomSerializerOptionsProvider()
         };
 
         logger.Debug("Creating MCP Server with collected options");

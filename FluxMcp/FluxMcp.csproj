@@ -23,11 +23,14 @@
 		<Title>FluxMcp</Title>
 		<Description>ProtoFlux MCP Server Mod</Description>
 		<Authors>esnya</Authors>
-		<RepositoryUrl>https://github.com/placeholder/FluxMcp</RepositoryUrl>
+		<RepositoryUrl>https://github.com/esnya/FluxMcp</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>Resonite,Mod,ResoniteModLoader</PackageTags>
-		<Version>0.3.0</Version>
+		<Version>0.0.0</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<DllsToCopy>
+			ModelContextProtocol.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll
+		</DllsToCopy>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -48,29 +51,19 @@
 
 	<ItemGroup>
 		<None Include=".github\**\" />
-	</ItemGroup>
 
-        <ItemGroup>
-                <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-                <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
-                <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
-                <PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
-                <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
-                <PackageReference Include="System.Threading.Channels" Version="9.0.0" />
-                <PackageReference Include="System.Text.Json" Version="9.0.0" />
-        </ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+		<PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
+		<PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
+		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 
-        <ItemGroup>
-                <ProjectReference Include="..\FluxMcp.Tools\FluxMcp.Tools.csproj" />
-                <ProjectReference Include="..\FluxMcp.Server\FluxMcp.Server.csproj" />
-        </ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="System.Net.ServerSentEvents">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Net.ServerSentEvents.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-
 		<Reference Include="ResoniteModLoader">
 			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
 			<Private>False</Private>
@@ -107,16 +100,17 @@
 	</Target>
 	<Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
 		<ItemGroup>
-                        <!-- Copy only the specified DLLs -->
+			<!-- Copy only the specified DLLs -->
 			<NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' &#xA;                                  and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
 		</ItemGroup>
 		<Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
 		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
 	</Target>
+
 	<PropertyGroup>
-		<DllsToCopy>ModelContextProtocol.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll</DllsToCopy>
 	</PropertyGroup>
-	<ItemGroup>
-		<EditorConfigFiles Remove="$(MSBuildThisFileDirectory)**\*.editorconfig" />
-	</ItemGroup>
+
+	<Import Project="..\FluxMcp.Tools\FluxMcp.Tools.projitems" Label="Shared" />
+
+	<Import Project="..\NetfxMcp\NetfxMcp.projitems" Label="Shared" />
 </Project>
