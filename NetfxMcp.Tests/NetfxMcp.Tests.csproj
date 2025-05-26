@@ -11,6 +11,9 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <!-- Unused using directive settings -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RemoveUnusedImports>true</RemoveUnusedImports>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

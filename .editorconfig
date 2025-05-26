@@ -22,6 +22,10 @@ dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = false
 file_header_template = unset
 
+# Remove unnecessary using directives
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.CS8019.severity = warning
+
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false:suggestion
 dotnet_style_qualification_for_field = false

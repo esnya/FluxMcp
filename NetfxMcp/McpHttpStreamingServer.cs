@@ -4,13 +4,12 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetfxMcp
-{
-    internal sealed class DuplexPipe : IDuplexPipe
+namespace NetfxMcp;
+
+internal sealed class DuplexPipe : IDuplexPipe
     {
         public PipeReader Input { get; private set; }
 
@@ -186,4 +185,3 @@ namespace NetfxMcp
             }
         }
     }
-}

@@ -15,6 +15,8 @@
 		<WarningLevel>9999</WarningLevel>
 		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<RemoveUnusedImports>True</RemoveUnusedImports>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -39,7 +41,8 @@
 		<Copyright>Copyright (c) 2025 $(Authors)</Copyright>
 		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<RemoveUnusedImports>True</RemoveUnusedImports>
 		<DelaySign>False</DelaySign>
 	</PropertyGroup>
 

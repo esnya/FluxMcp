@@ -4,9 +4,9 @@ using ModelContextProtocol.Server;
 using System.Threading.Channels;
 using NetfxMcp;
 
-namespace NetfxMcp.Tests
-{
-    [TestClass]
+namespace NetfxMcp.Tests;
+
+[TestClass]
     public class McpServerBuilderTests
     {
     private sealed class DummyLogger : INetfxMcpLogger
@@ -44,5 +44,4 @@ namespace NetfxMcp.Tests
 
         Assert.IsNotNull(server);
     }
-}
 }

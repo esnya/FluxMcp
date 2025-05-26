@@ -12,6 +12,8 @@
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 		<WarningsAsErrors />
 		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<RemoveUnusedImports>True</RemoveUnusedImports>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(ResonitePath)'==''">

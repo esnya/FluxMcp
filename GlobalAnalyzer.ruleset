@@ -2,6 +2,7 @@
 <RuleSet Name="Global Analyzer Rules" Description="Enhanced code analysis rules for FluxMcp projects" ToolsVersion="17.0">
   <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
     <Rule Id="CS1998" Action="Warning" />
+    <Rule Id="CS8019" Action="Warning" />
     <Rule Id="CS8600" Action="Warning" />
     <Rule Id="CS8601" Action="Warning" />
     <Rule Id="CS8602" Action="Warning" />

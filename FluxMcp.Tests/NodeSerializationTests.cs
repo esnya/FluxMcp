@@ -4,9 +4,9 @@ using FluxMcp.Tools;
 using FrooxEngine;
 using Elements.Core;
 
-namespace FluxMcp.Tests
-{
-    [TestClass]
+namespace FluxMcp.Tests;
+
+[TestClass]
     public class NodeSerializationTests
     {
         [TestMethod]
@@ -39,4 +39,3 @@ namespace FluxMcp.Tests
             Assert.IsTrue(json.Contains("\"z\":3."));
         }
     }
-}

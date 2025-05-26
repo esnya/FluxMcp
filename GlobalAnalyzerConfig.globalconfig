@@ -1,6 +1,10 @@
 # Global analyzer configuration for enhanced static analysis
 is_global = true
 
+# Code style and formatting rules
+dotnet_diagnostic.IDE0005.severity = warning  # Remove unnecessary using directives
+dotnet_diagnostic.CS8019.severity = warning   # Unnecessary using directive
+
 # Enable all available code analysis rules
 dotnet_analyzer_diagnostic.category-design.severity = warning
 dotnet_analyzer_diagnostic.category-performance.severity = warning
