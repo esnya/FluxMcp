@@ -4,8 +4,8 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace NetfxMcp
@@ -27,7 +27,7 @@ namespace NetfxMcp
     public class McpHttpStreamingServer : IAsyncDisposable
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Disposed in DisposeAsync")]
-        private readonly StatelessHttpServerTransport _transport = new StatelessHttpServerTransport();
+        private readonly StatelessHttpServerTransport _transport;
 
         private readonly IMcpServer _mcpServer;
         private readonly HttpListener _listener = new HttpListener();
@@ -47,8 +47,10 @@ namespace NetfxMcp
                 throw new ArgumentException("URL prefix cannot be null or empty.", nameof(prefix));
             }
 
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _listener.Prefixes.Add(prefix);
+            _transport = new StatelessHttpServerTransport();
             _mcpServer = serverBuilder(_transport);
         }
 

@@ -3,6 +3,7 @@ using FrooxEngine.ProtoFlux;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Elements.Core;
 
 namespace FluxMcp.Tools;
 
@@ -12,13 +13,43 @@ public static class NodeSerialization
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
 
+        options.Converters.Add(new RefIDConverter());
         options.Converters.Add(new WorldElementConverter());
         options.Converters.Add(new ProtoFluxNodeConverter());
+        options.Converters.Add(new Float3Converter());
+    }
+}
+
+public class RefIDConverter : JsonConverter<RefID>
+{
+    public override RefID Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.String)
+        {
+            throw new JsonException("Expected string token for RefID.");
+        }
+
+        var refIdString = reader.GetString();
+        if (refIdString == null || !RefID.TryParse(refIdString, out var refId))
+        {
+            throw new JsonException($"Invalid RefID format: {refIdString}");
+        }
+
+        return refId;
+    }
+
+    public override void Write(Utf8JsonWriter writer, RefID value, JsonSerializerOptions options)
+    {
+        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        writer.WriteStringValue(value.ToString());
     }
 }
 
 public class WorldElementConverter : JsonConverter<IWorldElement>
 {
+    public override bool CanConvert(Type typeToConvert)
+        => typeToConvert == typeof(IWorldElement);
+
     public override IWorldElement? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Deserialization of IWorldElement is not supported.");
@@ -80,6 +111,24 @@ public class ProtoFluxNodeConverter : JsonConverter<ProtoFluxNode>
         writer.WriteNumber("nodeReferenceCount", node.NodeReferenceCount);
         writer.WriteNumber("nodeGlobalRefCount", node.NodeGlobalRefCount);
         writer.WriteNumber("nodeGlobalRefListCount", node.NodeGlobalRefListCount);
+        writer.WriteEndObject();
+    }
+}
+
+public class Float3Converter : JsonConverter<float3>
+{
+    public override float3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotSupportedException("Deserialization of float3 is not supported.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, float3 value, JsonSerializerOptions options)
+    {
+        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        writer.WriteStartObject();
+        writer.WriteNumber("x", value.x);
+        writer.WriteNumber("y", value.y);
+        writer.WriteNumber("z", value.z);
         writer.WriteEndObject();
     }
 }

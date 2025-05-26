@@ -2,6 +2,7 @@ using Elements.Core;
 using FrooxEngine;
 using ResoniteModLoader;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.AI;
 
 namespace FluxMcp.Tools;
 
-internal static class NodeToolHelpers
+public static class NodeToolHelpers
 {
     internal static World FocusedWorld => Engine.Current.WorldManager.FocusedWorld;
     internal static TypeManager Types => FocusedWorld.Types;
@@ -19,6 +20,9 @@ internal static class NodeToolHelpers
         .Append(LocalUserSpace)
         .First();
 
+    // Suppress catching general exceptions for synchronous execution errors
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
     internal static async Task<T> UpdateAction<T>(Slot slot, Func<T> action)
     {
         T result = default!;
@@ -41,12 +45,14 @@ internal static class NodeToolHelpers
         return await completionSource.Task.ConfigureAwait(false);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
-    internal static object? Handle<T>(Func<T> func)
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
+    public static object Handle<T>(Func<T> func)
     {
+        if (func == null) throw new ArgumentNullException(nameof(func));
         try
         {
-            return func();
+            var result = func();
+            return MapResult(result);
         }
         catch (Exception ex)
         {
@@ -54,12 +60,14 @@ internal static class NodeToolHelpers
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
-    internal static async Task<object?> HandleAsync<T>(Func<Task<T>> func)
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
+    public static async Task<object> HandleAsync<T>(Func<Task<T>> func)
     {
+        if (func == null) throw new ArgumentNullException(nameof(func));
         try
         {
-            return await func().ConfigureAwait(false);
+            var result = await func().ConfigureAwait(false);
+            return MapResult(result);
         }
         catch (Exception ex)
         {
@@ -72,7 +80,55 @@ internal static class NodeToolHelpers
         return Types.EncodeType(type).Replace("<>", "<T>").Replace("<,>", "<T1,T2>");
     }
 
-    internal static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    private static AIContent ToContent(object? item)
+    {
+        if (item is AIContent ai)
+        {
+            return ai;
+        }
+        else if (item is string s)
+        {
+            return new TextContent(s);
+        }
+        else if (item is IWorldElement worldElement)
+        {
+            var json = JsonSerializer.Serialize<IWorldElement>(worldElement, JsonOptions);
+            return new TextContent(json);
+        }
+        else
+        {
+            return new TextContent(JsonSerializer.Serialize(item, JsonOptions));
+        }
+    }
+
+    private static object MapResult(object? result)
+    {
+
+        if (result is AIContent content)
+        {
+            return content;
+        }
+        else if (result is string str)
+        {
+            return new TextContent(str);
+        }
+        else if (result is IWorldElement worldElement)
+        {
+            var json = JsonSerializer.Serialize<IWorldElement>(worldElement, JsonOptions);
+            return new TextContent(json);
+        }
+        else if (result is System.Collections.IEnumerable seq)
+        {
+            return seq.Cast<object?>()
+                .Select(ToContent)
+                .ToList();
+        }
+        else
+        {
+            return new TextContent(JsonSerializer.Serialize(result, JsonOptions));
+        }
+    }
 
     internal static string CleanTypeName(string name)
     {
@@ -101,17 +157,31 @@ internal static class NodeToolHelpers
 
     internal static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {
-        var d = new int[a.Length + 1, b.Length + 1];
-        for (int i = 0; i <= a.Length; i++) d[i, 0] = i;
-        for (int j = 0; j <= b.Length; j++) d[0, j] = j;
+        var d = new int[a.Length + 1][];
+        for (int i = 0; i <= a.Length; i++)
+        {
+            d[i] = new int[b.Length + 1];
+            d[i][0] = i;
+        }
+        for (int j = 0; j <= b.Length; j++)
+        {
+            d[0][j] = j;
+        }
         for (int i = 1; i <= a.Length; i++)
         {
             for (int j = 1; j <= b.Length; j++)
             {
                 var cost = a[i - 1] == b[j - 1] ? 0 : 1;
-                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                d[i][j] = Math.Min(Math.Min(d[i - 1][j] + 1, d[i][j - 1] + 1), d[i - 1][j - 1] + cost);
             }
         }
-        return d[a.Length, b.Length];
+        return d[a.Length][b.Length];
+    }
+
+
+    internal static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true, WriteIndented = false };
+    static NodeToolHelpers()
+    {
+        NodeSerialization.RegisterConverters(JsonOptions);
     }
 }

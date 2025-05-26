@@ -47,8 +47,8 @@
 		<Reference Include="Elements.Core">
 			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
 		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
+		<Reference Include="System.Text.Json">
+			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Text.Json.dll</HintPath>
 		</Reference>
 		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
 			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>

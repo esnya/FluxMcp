@@ -11,6 +11,19 @@ public static class McpServerBuilder
 {
     public static IMcpServer Build(INetfxMcpLogger logger, ITransport transport, Assembly toolsAssembly)
     {
+        if (logger is null)
+        {
+            throw new ArgumentNullException(nameof(logger));
+        }
+        if (transport is null)
+        {
+            throw new ArgumentNullException(nameof(transport));
+        }
+        if (toolsAssembly is null)
+        {
+            throw new ArgumentNullException(nameof(toolsAssembly));
+        }
+
         logger.Debug("Starting to build MCP Server");
 
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();

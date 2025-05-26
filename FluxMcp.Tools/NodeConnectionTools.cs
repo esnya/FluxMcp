@@ -27,7 +27,7 @@ public static class NodeConnectionTools
     }
 
     [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node.")]
-    public static Task<object?> TryConnect(string nodeRefId, ConnectionType connectionType, int index, string targetNodeRefId, int targetIndex = 0)
+    public static Task<object> TryConnect(string nodeRefId, ConnectionType connectionType, int index, string targetNodeRefId, int targetIndex = 0)
     {
         return NodeToolHelpers.HandleAsync(async () =>
             await NodeToolHelpers.UpdateAction(NodeToolHelpers.WorkspaceSlot, async () =>
@@ -49,7 +49,7 @@ public static class NodeConnectionTools
     }
 
     [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index.")]
-    public static object? GetNodeConnection(string nodeRefId, ConnectionType connectionType, int index)
+    public static object GetNodeConnection(string nodeRefId, ConnectionType connectionType, int index)
     {
         return NodeToolHelpers.Handle<object>(() =>
         {

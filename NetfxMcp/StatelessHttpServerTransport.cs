@@ -5,21 +5,12 @@ using System.Threading.Tasks;
 using System.Threading.Channels;
 using ModelContextProtocol.Protocol;
 using System.Text.Json;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Net.ServerSentEvents;
 using System.Text;
 
 namespace NetfxMcp;
 
 public sealed class StatelessHttpServerTransport : ITransport
 {
-    public static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
-
     internal sealed class PostTransport : ITransport
     {
         private readonly Channel<JsonRpcMessage> _messages = Channel.CreateBounded<JsonRpcMessage>(new BoundedChannelOptions(1)
@@ -36,15 +27,15 @@ public sealed class StatelessHttpServerTransport : ITransport
 
         public PostTransport(StatelessHttpServerTransport parentTransport, IDuplexPipe httpBodies)
         {
-            _httpBodies = httpBodies ?? throw new ArgumentNullException(nameof(httpBodies), "HTTP bodies cannot be null.");
-            _parentTransport = parentTransport ?? throw new ArgumentNullException(nameof(parentTransport), "Parent transport cannot be null.");
+            _httpBodies = httpBodies;
+            _parentTransport = parentTransport;
         }
 
         public async ValueTask<bool> RunAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), JsonOptions, cancellationToken).ConfigureAwait(false);
+                var message = await JsonSerializer.DeserializeAsync<JsonRpcMessage>(_httpBodies.Input.AsStream(), cancellationToken: cancellationToken).ConfigureAwait(false);
                 await OnMessageReceivedAsync(message, cancellationToken).ConfigureAwait(false);
 
                 if (_pendingRequest.Id is null)
@@ -60,7 +51,7 @@ public sealed class StatelessHttpServerTransport : ITransport
                     while (channel.TryRead(out var mesasge))
                     {
                         await _httpBodies.Output.WriteAsync(_messageEventPrefix, cancellationToken).ConfigureAwait(false);
-                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, JsonOptions, cancellationToken).ConfigureAwait(false);
+                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, cancellationToken: cancellationToken).ConfigureAwait(false);
                         await _httpBodies.Output.WriteAsync(_messageEventSuffix, cancellationToken).ConfigureAwait(false);
 
                         if (mesasge is JsonRpcMessageWithId response && response.Id == _pendingRequest)
@@ -90,19 +81,6 @@ public sealed class StatelessHttpServerTransport : ITransport
             await _messages.Writer.WriteAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
-        private async IAsyncEnumerable<SseItem<JsonRpcMessage?>> StopOnFinalResponseFilter(IAsyncEnumerable<SseItem<JsonRpcMessage?>> messages, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var message in messages.WithCancellation(cancellationToken))
-            {
-                yield return message;
-
-                if (message.Data is JsonRpcMessageWithId response && response.Id == _pendingRequest)
-                {
-                    // Complete the SSE response stream now that all pending requests have been processed.
-                    break;
-                }
-            }
-        }
 
         private async ValueTask OnMessageReceivedAsync(JsonRpcMessage? message, CancellationToken cancellationToken)
         {
@@ -144,7 +122,6 @@ public sealed class StatelessHttpServerTransport : ITransport
     private ChannelWriter<JsonRpcMessage> MessageWriter => _incomingChannel.Writer;
     public ChannelReader<JsonRpcMessage> MessageReader => _incomingChannel.Reader;
     public InitializeRequestParams? InitializeRequest { get; private set; }
-
 
     public async Task<bool> HandlePostRequest(IDuplexPipe httpBodies, CancellationToken cancellationToken)
     {
