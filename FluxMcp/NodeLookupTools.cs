@@ -5,6 +5,7 @@ using ResoniteModLoader;
 using System;
 using System.ComponentModel;
 using System.Linq;
+using Elements.Core;
 
 namespace FluxMcp;
 

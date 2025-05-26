@@ -1,11 +1,11 @@
 using Elements.Core;
 using FrooxEngine;
-using ModelContextProtocol.Server;
 using ResoniteModLoader;
 using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace FluxMcp;
 
