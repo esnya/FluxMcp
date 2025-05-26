@@ -1,23 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
-		<TargetFramework>net472</TargetFramework>
-		<FileAlignment>512</FileAlignment>
-		<LangVersion>10.0</LangVersion>
-		<Nullable>enable</Nullable>
-		<Deterministic>true</Deterministic>
-		<CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-		<DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<EnableNETAnalyzers>True</EnableNETAnalyzers>
-		<AnalysisLevel>latest-all</AnalysisLevel>
-		<WarningLevel>9999</WarningLevel>
-		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RemoveUnusedImports>True</RemoveUnusedImports>
-	</PropertyGroup>
+               <Deterministic>true</Deterministic>
+               <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
+               <DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
+               <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+               <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+               <WarningLevel>9999</WarningLevel>
+       </PropertyGroup>
 
 	<PropertyGroup>
 		<RootNamespace>FluxMcp</RootNamespace>
@@ -41,10 +30,8 @@
 		<Copyright>Copyright (c) 2025 $(Authors)</Copyright>
 		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RemoveUnusedImports>True</RemoveUnusedImports>
-		<DelaySign>False</DelaySign>
-	</PropertyGroup>
+                <DelaySign>False</DelaySign>
+        </PropertyGroup>
 
 	<PropertyGroup Condition="'$(ResonitePath)'==''">
 		<!-- If you don't want to provide a ResonitePath in dotnet build, you can specify one here -->

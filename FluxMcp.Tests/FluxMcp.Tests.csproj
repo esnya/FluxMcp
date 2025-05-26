@@ -1,22 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net472</TargetFramework>
-		<LangVersion>latest</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<!-- Enhanced static code analysis -->
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest</AnalysisLevel>
-		<AnalysisMode>All</AnalysisMode>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<WarningsAsErrors />
-		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RemoveUnusedImports>True</RemoveUnusedImports>
-		<!-- Suppress XML documentation warnings for test projects -->
-		<NoWarn>$(NoWarn);CS1591</NoWarn>
-	</PropertyGroup>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <!-- Enhanced static code analysis -->
+                <!-- Suppress XML documentation warnings for test projects -->
+                <NoWarn>$(NoWarn);CS1591</NoWarn>
+        </PropertyGroup>
 
 	<PropertyGroup Condition="'$(ResonitePath)'==''">
 		<!-- If you don't want to provide a ResonitePath in dotnet build, you can specify one here -->

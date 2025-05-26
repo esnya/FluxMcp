@@ -1,19 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <!-- Enhanced static code analysis -->
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <AnalysisMode>All</AnalysisMode>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-    <!-- Unused using directive settings -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RemoveUnusedImports>true</RemoveUnusedImports>
     <!-- Suppress XML documentation warnings for test projects -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
