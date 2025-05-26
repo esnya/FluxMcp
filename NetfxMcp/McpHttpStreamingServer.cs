@@ -106,7 +106,7 @@ internal sealed class DuplexPipe : IDuplexPipe
                         }
 
                         _logger.Debug($"Received request: {ctx.Request.HttpMethod} {ctx.Request.Url}");
-                        _ = Task.Run(() => HandleContextAsync(ctx, cancellationToken), cancellationToken);
+                        await HandleContextAsync(ctx, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 finally
