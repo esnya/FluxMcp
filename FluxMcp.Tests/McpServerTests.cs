@@ -27,15 +27,17 @@ public sealed class McpServerTests
         while (!FluxMcpMod.IsServerRunning)
         {
             // Console.WriteLine("Waiting for MCP server to start...");
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
         }
 
-        var loggerFactory = LoggerFactory.Create(builder =>
+        using var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Debug);
         });
-        var clientTransport = new SseClientTransport(
+#pragma warning disable CA2000 // Dispose objects before losing scope - SseClientTransport is managed by McpClientFactory
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task - await using pattern doesn't support ConfigureAwait
+        await using var clientTransport = new SseClientTransport(
             new()
             {
                 Endpoint = new Uri("http://127.0.0.1:5000/mcp"),
@@ -43,7 +45,9 @@ public sealed class McpServerTests
             },
             loggerFactory: loggerFactory
         );
-        var client = await McpClientFactory.CreateAsync(clientTransport);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        var client = await McpClientFactory.CreateAsync(clientTransport).ConfigureAwait(false);
 
         var tools = await client.ListToolsAsync().ConfigureAwait(false);
         Console.WriteLine($"{tools.Count} tools found:\n{string.Join(", ", tools.Select(t => '\t' + t.Name + "\n"))}");
@@ -51,7 +55,7 @@ public sealed class McpServerTests
         Assert.IsNotNull(tools, "Tools array should not be null.");
         Assert.IsTrue(tools.Count > 0, "Tools array should not be empty.");
 
-        await client.DisposeAsync();
+        await client.DisposeAsync().ConfigureAwait(false);
 
         FluxMcpMod.BeforeHotReload();
     }

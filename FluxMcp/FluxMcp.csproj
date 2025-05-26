@@ -13,6 +13,7 @@
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<WarningLevel>9999</WarningLevel>
+		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 	</PropertyGroup>
 
@@ -51,6 +52,14 @@
 
 	<ItemGroup>
 		<None Include=".github\**\" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
@@ -100,15 +109,13 @@
 	</Target>
 	<Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
 		<ItemGroup>
-			<!-- Copy only the specified DLLs -->
-			<NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' &#xA;                                  and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
+			<NuGetLibs Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)'=='.dll' and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
 		</ItemGroup>
 		<Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs" Importance="high" />
 		<Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs" SkipUnchangedFiles="true" ContinueOnError="true" />
 	</Target>
 
-	<PropertyGroup>
-	</PropertyGroup>
+
 
 	<Import Project="..\FluxMcp.Tools\FluxMcp.Tools.projitems" Label="Shared" />
 

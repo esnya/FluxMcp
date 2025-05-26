@@ -4,9 +4,11 @@ using ModelContextProtocol.Server;
 using System.Threading.Channels;
 using NetfxMcp;
 
-[TestClass]
-public class McpServerBuilderTests
+namespace NetfxMcp.Tests
 {
+    [TestClass]
+    public class McpServerBuilderTests
+    {
     private sealed class DummyLogger : INetfxMcpLogger
     {
         public void Debug(string message) { }
@@ -31,13 +33,16 @@ public class McpServerBuilderTests
     }
 
     [TestMethod]
-    public void Build_ReturnsServer_WhenAssemblyHasTools()
+    public void BuildReturnsServerWhenAssemblyHasTools()
     {
         var logger = new DummyLogger();
+#pragma warning disable CA2000 // Dispose objects before losing scope - DummyTransport doesn't implement IDisposable
         var transport = new DummyTransport();
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         var server = McpServerBuilder.Build(logger, transport, typeof(SampleTools).Assembly);
 
         Assert.IsNotNull(server);
     }
+}
 }

@@ -10,7 +10,7 @@ namespace FluxMcp.Tests
     public class NodeSerializationTests
     {
         [TestMethod]
-        public void IWorldElement_Serialization_WritesRefIdNameType()
+        public void IWorldElementSerializationWritesRefIdNameType()
         {
             var mockElement = new Mock<IWorldElement>();
             mockElement.SetupGet(x => x.ReferenceID).Returns(new RefID(0x12345));
@@ -28,7 +28,7 @@ namespace FluxMcp.Tests
         }
 
         [TestMethod]
-        public void Float3_Serialization_WritesXYZ()
+        public void Float3SerializationWritesXYZ()
         {
             var value = new float3(1.1f, 2.2f, 3.3f);
             var options = new JsonSerializerOptions();

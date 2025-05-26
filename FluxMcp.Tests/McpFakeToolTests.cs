@@ -5,14 +5,11 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Server;
 using NetfxMcp;
-using ProtoFlux.Core;
-using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 
 namespace FluxMcp.Tests;
 
-internal class FakeWorldElement : IWorldElement
+internal sealed class FakeWorldElement : IWorldElement
 {
     public RefID ReferenceID => new RefID(0x12345678);
 
@@ -51,7 +48,7 @@ static class McpFakeTools
     }
 }
 
-internal class TestLogger : INetfxMcpLogger
+internal sealed class TestLogger : INetfxMcpLogger
 {
     public void Debug(string message) => System.Diagnostics.Debug.WriteLine(message);
     public void DebugFunc(Func<string> messageFunc) => System.Diagnostics.Debug.WriteLine(messageFunc());
@@ -60,7 +57,7 @@ internal class TestLogger : INetfxMcpLogger
 }
 
 [TestClass]
-public sealed class McpFakeToolTests
+public sealed class McpFakeToolTests : IDisposable
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private McpHttpStreamingServer _server;
@@ -74,15 +71,6 @@ public sealed class McpFakeToolTests
     [TestInitialize]
     public async Task Setup()
     {
-        try
-        {
-            NodeSerialization.RegisterConverters(JsonSerializerOptions.Default);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error registering converters: {ex.Message}");
-        }
-
         var logger = new TestLogger();
         _server = new McpHttpStreamingServer(
             logger,
@@ -93,13 +81,16 @@ public sealed class McpFakeToolTests
         _serverCts = new CancellationTokenSource();
         _serverTask = _server.StartAsync(_serverCts.Token);
 
-        _client = await McpClientFactory.CreateAsync(new SseClientTransport(
+#pragma warning disable CA2000 // Dispose objects before losing scope - SseClientTransport is managed by McpClientFactory
+        var clientTransport = new SseClientTransport(
             new()
             {
                 Endpoint = new Uri("http://127.0.0.1:5050/mcp"),
                 UseStreamableHttp = true,
             }
-        ));
+        );
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        _client = await McpClientFactory.CreateAsync(clientTransport).ConfigureAwait(false);
 
         _tools = await _client.ListToolsAsync().ConfigureAwait(false);
     }
@@ -109,39 +100,65 @@ public sealed class McpFakeToolTests
     {
         if (_client != null)
         {
-            await _client.DisposeAsync();
+            await _client.DisposeAsync().ConfigureAwait(false);
         }
 
         if (_serverCts != null)
         {
             _serverCts.Cancel();
             _server.Stop();
-            await _serverTask;
+            await _serverTask.ConfigureAwait(false);
         }
     }
 
     [TestMethod]
     [Timeout(10000)]
-    public async Task Should_ReturnsString()
+    public async Task ShouldReturnsString()
     {
         var tool = _tools.FirstOrDefault(t => t.Name == "returnString");
         Assert.IsNotNull(tool, "Tool 'returnString' should be found.");
 
-        var result = (JsonElement?)await tool.InvokeAsync();
+        var result = (JsonElement?)await tool.InvokeAsync().ConfigureAwait(false);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.ToString().Contains("\"text\":\"Hello, World!\""));
     }
 
     [TestMethod]
     [Timeout(10000)]
-    public async Task Should_ReturnWorldElement()
+    public async Task ShouldReturnWorldElement()
     {
         var tool = _tools.FirstOrDefault(t => t.Name == "returnWorldElement");
         Assert.IsNotNull(tool, "Tool 'returnWorldElement' should be found.");
 
-        var result = (JsonElement?)await tool.InvokeAsync(new AIFunctionArguments());
+        var result = (JsonElement?)await tool.InvokeAsync(new AIFunctionArguments()).ConfigureAwait(false);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.ToString().UnescapeUnicodeCharacters().Contains("\"refId\":\"ID12345678\""));
         Assert.IsTrue(result.ToString().UnescapeUnicodeCharacters().Contains("\"name\":\"FakeElement\""));
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            _client?.DisposeAsync().AsTask().Wait();
+        }
+        catch (AggregateException)
+        {
+            // Ignore disposal exceptions during test cleanup
+        }
+
+        try
+        {
+            _serverCts?.Cancel();
+            _server?.Stop();
+            _serverTask?.Wait();
+            _server?.DisposeAsync().AsTask().Wait();
+        }
+        catch (AggregateException)
+        {
+            // Ignore disposal exceptions during test cleanup
+        }
+
+        _serverCts?.Dispose();
     }
 }
