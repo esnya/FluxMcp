@@ -13,7 +13,7 @@ internal static class McpServerBuilder
         ResoniteMod.Debug("Starting to build MCP Server");
 
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();
-        foreach (var type in typeof(NodeTools).Assembly.GetTypes())
+        foreach (var type in typeof(NodeToolHelpers).Assembly.GetTypes())
         {
             if (type.GetCustomAttribute<McpServerToolTypeAttribute>() is null)
             {
