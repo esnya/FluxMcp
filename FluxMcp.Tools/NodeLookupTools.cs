@@ -50,7 +50,7 @@ public static class NodeLookupTools
         });
     }
 
-    [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in cattegory (i.e. Actions, Actions/IndirectActions, ...)")]
+    [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in category (e.g. Math, Actions, Actions/IndirectActions). Use this to browse available node types in a specific category.")]
     public static object? ListNodeTypesInCategory(string category)
     {
         return NodeToolHelpers.Handle(() =>
@@ -59,7 +59,7 @@ public static class NodeLookupTools
         });
     }
 
-    [McpServerTool(Name = "searchNodeType"), Description("Search node in all category.")]
+    [McpServerTool(Name = "searchNodeType"), Description("Search for ProtoFlux nodes across all categories. Use this to find nodes by name or functionality. Ideal for discovering available node types when you're not sure of the exact name.")]
     public static object? SearchNodeType(string search, int maxItems, int skip = 0)
     {
         return NodeToolHelpers.Handle(() =>

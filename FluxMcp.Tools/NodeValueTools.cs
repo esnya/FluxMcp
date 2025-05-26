@@ -11,8 +11,8 @@ namespace FluxMcp.Tools;
 [McpServerToolType]
 public static class NodeValueTools
 {
-    [McpServerTool(Name = "getInputNodeValue"), Description("Gets the value of input node by index")]
-    public static object? GetInputNodeValue(string nodeRefId, int inputIndex)
+    [McpServerTool(Name = "getInputNodeValue"), Description("Gets the current value of an input node. Use this to read values from input nodes like ValueInput<T>.")]
+    public static object? GetInputNodeValue(string nodeRefId)
     {
         return NodeToolHelpers.Handle(() =>
         {
@@ -25,7 +25,7 @@ public static class NodeValueTools
         });
     }
 
-    [McpServerTool(Name = "setInputNodeValue"), Description("Sets the value of input node")]
+    [McpServerTool(Name = "setInputNodeValue"), Description("Sets the value of an input node. Automatically handles type conversion for basic types like float, int, bool, and vectors. Use this to configure input nodes with specific values.")]
     public static async Task<object?> SetInputNodeValue(string nodeRefId, JsonElement value)
     {
         return await NodeToolHelpers.HandleAsync(async () =>

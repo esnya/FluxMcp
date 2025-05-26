@@ -26,35 +26,46 @@ public static class NodeConnectionTools
         GlobalRefList
     }
 
-    [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node.")]
-    public static Task<object> TryConnect(string nodeRefId, ConnectionType connectionType, int index, string targetNodeRefId, int targetIndex = 0)
+    [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node. connectionType values: Input, Output, Impulse, Operation, Reference, InputList, OutputList, ImpulseList, OperationList, GlobalRef, GlobalRefList")]
+    public static Task<object> TryConnect(string nodeRefId, string connectionType, int index, string targetNodeRefId, int targetIndex = 0)
     {
         return NodeToolHelpers.HandleAsync(async () =>
-            await NodeToolHelpers.UpdateAction(NodeToolHelpers.WorkspaceSlot, async () =>
+            await NodeToolHelpers.UpdateAction(NodeToolHelpers.WorkspaceSlot, () =>
             {
                 var node = NodeLookupTools.FindNodeInternal(nodeRefId);
                 var target = NodeLookupTools.FindNodeInternal(targetNodeRefId);
 
+                if (!Enum.TryParse<ConnectionType>(connectionType, out var parsedConnectionType))
+                {
+                    throw new ArgumentException($"Invalid connection type: {connectionType}. Valid values: {string.Join(", ", Enum.GetNames(typeof(ConnectionType)))}", nameof(connectionType));
+                }
+
                 try
                 {
-                    return TryConnectInternal(node, connectionType, index, target, targetIndex);
+                    return TryConnectInternal(node, parsedConnectionType, index, target, targetIndex);
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
                     ResoniteMod.Warn(ex.ToString());
-                    return TryConnectInternal(target, connectionType, targetIndex, node, index);
+                    return TryConnectInternal(target, parsedConnectionType, targetIndex, node, index);
                 }
             }).ConfigureAwait(false)
         );
     }
 
-    [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index.")]
-    public static object GetNodeConnection(string nodeRefId, ConnectionType connectionType, int index)
+    [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index. connectionType values: Input, Output, Impulse, Operation, Reference, InputList, OutputList, ImpulseList, OperationList, GlobalRef, GlobalRefList")]
+    public static object GetNodeConnection(string nodeRefId, string connectionType, int index)
     {
         return NodeToolHelpers.Handle<object>(() =>
         {
             var node = NodeLookupTools.FindNodeInternal(nodeRefId);
-            return connectionType switch
+
+            if (!Enum.TryParse<ConnectionType>(connectionType, out var parsedConnectionType))
+            {
+                throw new ArgumentException($"Invalid connection type: {connectionType}. Valid values: {string.Join(", ", Enum.GetNames(typeof(ConnectionType)))}", nameof(connectionType));
+            }
+
+            return parsedConnectionType switch
             {
                 ConnectionType.Input => node.GetInput(index),
                 ConnectionType.Output => node.GetOutput(index),
@@ -67,7 +78,7 @@ public static class NodeConnectionTools
                 ConnectionType.OperationList => node.GetOperationList(index),
                 ConnectionType.GlobalRef => node.GetGlobalRef(index),
                 ConnectionType.GlobalRefList => node.GetGlobalRefList(index),
-                _ => throw new ArgumentException($"Unknown connection type: {connectionType}", nameof(connectionType))
+                _ => throw new ArgumentException($"Unknown connection type: {parsedConnectionType}", nameof(connectionType))
             };
         });
     }

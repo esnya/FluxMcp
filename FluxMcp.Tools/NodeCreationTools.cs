@@ -13,7 +13,7 @@ namespace FluxMcp.Tools;
 [McpServerToolType]
 public static class NodeCreationTools
 {
-    [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. Dimension of postition: (Right, Up, Forward).")]
+    [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. For generic types, use specific types like <float>, <int>, <bool>, <float3>, <color> instead of <T>. Use searchNodeType to find valid node types. Dimension of position: (Right, Up, Forward).")]
     public static Task<object?> CreateNode(string type, float3 position)
     {
         return NodeToolHelpers.HandleAsync(async () =>
@@ -51,8 +51,8 @@ public static class NodeCreationTools
                     suggestion = sugPrefix + typeGeneric;
                 }
                 var message = suggestion is null
-                    ? $"Invalid type: {type}"
-                    : $"Invalid type: {type}. Did you mean {suggestion}?";
+                    ? $"Invalid type: {type}. Use searchNodeType or listNodeTypes to find valid node types."
+                    : $"Invalid type: {type}. Did you mean {suggestion}? Use searchNodeType to find similar node types.";
                 throw new ArgumentException(message);
             }
 
@@ -184,17 +184,41 @@ public static class NodeCreationTools
         if (type.Contains("<T>"))
         {
             ResoniteMod.Warn($"Invalid generic type format {type}.");
-            throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>) instead of <T>", nameof(type));
+            var guidance = GetCommonTypesGuidance();
+            throw new ArgumentException($"Generic types require specific type parameters instead of <T>.\n\n{guidance}", nameof(type));
         }
         if (type.Contains("<T1, T2>"))
         {
             ResoniteMod.Warn($"Invalid generic type format {type}.");
-            throw new ArgumentException("Use specific generic type format (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3, float3>) instead of <T1, T2>", nameof(type));
+            var guidance = GetCommonTypesGuidance();
+            throw new ArgumentException($"Generic types require specific type parameters instead of <T1, T2>.\n\n{guidance}", nameof(type));
         }
         if (type.Contains("`"))
         {
             ResoniteMod.Warn($"Invalid generic type format {type}.");
             throw new ArgumentException("Invalid generic type format. Use '<T>' instead (i.e. [ProtoFluxBindings]FrooxEngine....NodeType<float3>)", nameof(type));
         }
+    }
+
+    /// <summary>
+    /// Gets commonly used ProtoFlux types for AI guidance
+    /// </summary>
+    /// <returns>Dictionary of type categories and their common types</returns>
+    internal static string GetCommonTypesGuidance()
+    {
+        return @"Common ProtoFlux types for generic nodes:
+• Basic types: float, int, bool, string
+• Vectors: float2, float3, float4, int2, int3, int4
+• Colors: color, colorX
+• Math: double, uint, byte, short
+• Complex: Slot, IWorldElement, User
+
+Examples:
+• ValueInput<float> - Input node for float values
+• ValueInput<bool> - Input node for boolean values
+• Adder<float, float> - Add two float values
+• Multiplier<float3> - Multiply float3 vectors
+
+Use searchNodeType to find specific nodes or listNodeTypes to browse categories.";
     }
 }
