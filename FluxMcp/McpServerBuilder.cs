@@ -57,7 +57,8 @@ internal static class McpServerBuilder
                 {
                     ToolCollection = toolCollection
                 }
-            }
+            },
+            SerializerOptionsProvider = new CustomSerializerOptionsProvider()
         };
 
         ResoniteMod.Debug("Creating MCP Server with collected options");
