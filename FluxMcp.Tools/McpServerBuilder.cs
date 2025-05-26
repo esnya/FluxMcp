@@ -2,15 +2,14 @@ using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using System;
 using System.Reflection;
-using ResoniteModLoader;
 
 namespace FluxMcp;
 
 public static class McpServerBuilder
 {
-    public static IMcpServer Build(ITransport transport)
+    public static IMcpServer Build(IFluxLogger logger, ITransport transport)
     {
-        ResoniteMod.Debug("Starting to build MCP Server");
+        logger.Debug("Starting to build MCP Server");
 
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();
         foreach (var type in typeof(NodeToolHelpers).Assembly.GetTypes())
@@ -27,10 +26,10 @@ public static class McpServerBuilder
                     continue;
                 }
 
-                ResoniteMod.Debug($"Adding tool from method {method.Name} in type {type.FullName}");
+                logger.Debug($"Adding tool from method {method.Name} in type {type.FullName}");
                 if (!method.IsStatic)
                 {
-                    ResoniteMod.Warn($"Skipping non-static method {method.Name} in type {type.FullName}");
+                    logger.Warn($"Skipping non-static method {method.Name} in type {type.FullName}");
                     continue;
                 }
 
@@ -41,13 +40,13 @@ public static class McpServerBuilder
                 }
                 catch (Exception ex)
                 {
-                    ResoniteMod.Warn($"Error creating tool for method {method.Name} in type {type.FullName}: {ex.Message}");
+                    logger.Warn($"Error creating tool for method {method.Name} in type {type.FullName}: {ex.Message}");
                     throw;
                 }
             }
         }
 
-        ResoniteMod.Debug("Finished collecting tools for MCP Server");
+        logger.Debug("Finished collecting tools for MCP Server");
 
         var options = new McpServerOptions
         {
@@ -61,7 +60,7 @@ public static class McpServerBuilder
             SerializerOptionsProvider = new CustomSerializerOptionsProvider()
         };
 
-        ResoniteMod.Debug("Creating MCP Server with collected options");
+        logger.Debug("Creating MCP Server with collected options");
         return McpServerFactory.Create(transport, options);
     }
 }

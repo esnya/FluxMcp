@@ -71,7 +71,8 @@ public partial class FluxMcpMod : ResoniteMod
         var bindAddress = _config?.GetValue(_bindAddressKey) ?? "127.0.0.1";
         var port = _config?.GetValue(_portKey) ?? 5000;
 
-        _httpServer = new McpHttpStreamingServer(transport => McpServerBuilder.Build(transport), $"http://{bindAddress}:{port}/");
+        var logger = new ResoniteLogger();
+        _httpServer = new McpHttpStreamingServer(logger, transport => McpServerBuilder.Build(logger, transport), $"http://{bindAddress}:{port}/");
 
         Debug("Starting HTTP streaming server...");
         _cts = new CancellationTokenSource();

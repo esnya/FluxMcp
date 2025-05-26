@@ -1,6 +1,5 @@
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using ResoniteModLoader;
 using System;
 using System.IO.Pipelines;
 using System.Net;
@@ -32,10 +31,11 @@ namespace FluxMcp
 
         private readonly IMcpServer _mcpServer;
         private readonly HttpListener _listener = new HttpListener();
+        private readonly IFluxLogger _logger;
 
         public bool IsRunning => _listener.IsListening;
 
-        public McpHttpStreamingServer(Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
+        public McpHttpStreamingServer(IFluxLogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
         {
             if (serverBuilder is null)
             {
@@ -47,6 +47,7 @@ namespace FluxMcp
                 throw new ArgumentException("URL prefix cannot be null or empty.", nameof(prefix));
             }
 
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _listener.Prefixes.Add(prefix);
             _mcpServer = serverBuilder(_transport);
         }
@@ -55,17 +56,17 @@ namespace FluxMcp
         {
             try
             {
-                ResoniteMod.Debug("Starting MCP Server...");
+                _logger.Debug("Starting MCP Server...");
                 var server = _mcpServer.RunAsync(cancellationToken);
 
                 try
                 {
-                    ResoniteMod.Debug("Starting HTTP listener...");
+                    _logger.Debug("Starting HTTP listener...");
                     _listener.Start();
 
-                    ResoniteMod.Msg($"MCP Streamable HTTP server listening on {_listener.Prefixes}");
+                    _logger.Msg($"MCP Streamable HTTP server listening on {_listener.Prefixes}");
 
-                    ResoniteMod.Debug("Listening for incoming requests...");
+                    _logger.Debug("Listening for incoming requests...");
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         HttpListenerContext ctx;
@@ -82,7 +83,7 @@ namespace FluxMcp
                             break;
                         }
 
-                        ResoniteMod.Debug($"Received request: {ctx.Request.HttpMethod} {ctx.Request.Url}");
+                        _logger.Debug($"Received request: {ctx.Request.HttpMethod} {ctx.Request.Url}");
                         _ = Task.Run(() => HandleContextAsync(ctx, cancellationToken), cancellationToken);
                     }
                 }
@@ -93,18 +94,18 @@ namespace FluxMcp
             }
             catch (Exception ex)
             {
-                ResoniteMod.Warn($"Error in StartAsync: {ex.Message}");
+                _logger.Warn($"Error in StartAsync: {ex.Message}");
                 throw;
             }
             finally
             {
-                ResoniteMod.Msg("MCP HTTP server stopped.");
+                _logger.Msg("MCP HTTP server stopped.");
             }
         }
 
         public void Stop()
         {
-            ResoniteMod.Msg("Stopping MCP HTTP server...");
+            _logger.Msg("Stopping MCP HTTP server...");
             _listener.Stop();
         }
 
@@ -134,10 +135,10 @@ namespace FluxMcp
                 // response.StatusCode = 202; // Accepted
                 response.AddHeader("Content-Type", "text/event-stream");
 
-                ResoniteMod.Debug($"Handling request: {request.HttpMethod} {request.Url}");
+                _logger.Debug($"Handling request: {request.HttpMethod} {request.Url}");
                 var duplexPipe = new DuplexPipe(PipeReader.Create(request.InputStream), PipeWriter.Create(response.OutputStream));
                 var bodyWritten = await _transport.HandlePostRequest(duplexPipe, cancellationToken).ConfigureAwait(false);
-                ResoniteMod.DebugFunc(() => $"Request body written: {bodyWritten}");
+                _logger.DebugFunc(() => $"Request body written: {bodyWritten}");
                 await response.OutputStream.FlushAsync(cancellationToken).ConfigureAwait(false);
 
                 try
@@ -146,12 +147,12 @@ namespace FluxMcp
                 }
                 catch (HttpListenerException ex)
                 {
-                    ResoniteMod.Warn($"Error closing response: {ex.Message}");
+                    _logger.Warn($"Error closing response: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                ResoniteMod.Warn($"{ex.GetType()}: {ex.Message}\n\t{ex.StackTrace}");
+                _logger.Warn($"{ex.GetType()}: {ex.Message}\n\t{ex.StackTrace}");
                 var response = ctx.Response;
                 if (response.OutputStream.CanWrite)
                 {
@@ -171,14 +172,14 @@ namespace FluxMcp
 
             try
             {
-                ResoniteMod.Debug("Disposing MCP HTTP server...");
+                _logger.Debug("Disposing MCP HTTP server...");
                 Stop();
                 await _mcpServer.DisposeAsync().ConfigureAwait(false);
                 _listener.Close();
             }
             catch (Exception ex)
             {
-                ResoniteMod.Warn($"Error disposing MCP HTTP server: {ex.Message}");
+                _logger.Warn($"Error disposing MCP HTTP server: {ex.Message}");
                 throw;
             }
         }
