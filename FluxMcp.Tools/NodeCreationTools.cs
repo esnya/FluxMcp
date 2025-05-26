@@ -10,9 +10,18 @@ using System.Threading.Tasks;
 
 namespace FluxMcp.Tools;
 
+/// <summary>
+/// Provides MCP tools for creating and deleting ProtoFlux nodes.
+/// </summary>
 [McpServerToolType]
 public static class NodeCreationTools
 {
+    /// <summary>
+    /// Creates a new ProtoFlux node with the specified type and position.
+    /// </summary>
+    /// <param name="type">The type of node to create. For generic types, use specific types like &lt;float&gt;, &lt;int&gt;, etc.</param>
+    /// <param name="position">The position to place the node (Right, Up, Forward).</param>
+    /// <returns>A task representing the asynchronous operation that returns the created node or null if creation failed.</returns>
     [McpServerTool(Name = "createNode"), Description("Creates a new node with the specified name and type. For generic types, use specific types like <float>, <int>, <bool>, <float3>, <color> instead of <T>. Use searchNodeType to find valid node types. Dimension of position: (Right, Up, Forward).")]
     public static async Task<object?> CreateNode(string type, float3 position)
     {
@@ -61,6 +70,11 @@ public static class NodeCreationTools
         return result;
     }
 
+    /// <summary>
+    /// Deletes the specified ProtoFlux node.
+    /// </summary>
+    /// <param name="nodeRefId">The reference ID of the node to delete.</param>
+    /// <returns>A task representing the asynchronous operation that returns a confirmation message or null if deletion failed.</returns>
     [McpServerTool(Name = "deleteNode"), Description("Deletes the specified node.")]
     public static async Task<object?> DeleteNode(string nodeRefId)
     {

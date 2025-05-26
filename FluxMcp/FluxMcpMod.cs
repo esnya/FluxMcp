@@ -15,13 +15,20 @@ using ResoniteHotReloadLib;
 
 namespace FluxMcp;
 
+/// <summary>
+/// FluxMcp mod that provides Model Context Protocol (MCP) server functionality for ProtoFlux nodes in Resonite.
+/// </summary>
 public partial class FluxMcpMod : ResoniteMod
 {
     private static Assembly ModAssembly => typeof(FluxMcpMod).Assembly;
 
+    /// <inheritdoc />
     public override string Name => ModAssembly.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
+    /// <inheritdoc />
     public override string Author => ModAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()!.Company;
+    /// <inheritdoc />
     public override string Version => ModAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+    /// <inheritdoc />
     public override string Link => ModAssembly.GetCustomAttributes<AssemblyMetadataAttribute>().First(meta => meta.Key == "RepositoryUrl").Value;
 
     internal static string HarmonyId => $"com.nekometer.esnya.{ModAssembly.GetName().Name}";
@@ -41,6 +48,9 @@ public partial class FluxMcpMod : ResoniteMod
 
     private static CancellationTokenSource? _cts;
     private static Task? _serverTask;
+    /// <summary>
+    /// Gets or sets the hot reload registration action for development builds.
+    /// </summary>
     public static Action<ResoniteMod>? RegisterHotReloadAction { get; set; } = mod =>
     {
 #if DEBUG
@@ -48,6 +58,9 @@ public partial class FluxMcpMod : ResoniteMod
 #endif
     };
 
+    /// <summary>
+    /// Gets a value indicating whether the MCP server is currently running.
+    /// </summary>
     public static bool IsServerRunning => _httpServer?.IsRunning ?? false;
 
 
@@ -105,6 +118,7 @@ public partial class FluxMcpMod : ResoniteMod
         }
     }
 
+    /// <inheritdoc />
     public override void OnEngineInit()
     {
         Init(this);
@@ -144,11 +158,18 @@ public partial class FluxMcpMod : ResoniteMod
     }
 
 #if DEBUG
+    /// <summary>
+    /// Called before hot reload to clean up resources.
+    /// </summary>
     public static void BeforeHotReload()
     {
         StopHttpServer();
     }
 
+    /// <summary>
+    /// Called after hot reload to reinitialize the mod.
+    /// </summary>
+    /// <param name="modInstance">The mod instance to reinitialize with.</param>
     public static void OnHotReload(ResoniteMod modInstance)
     {
         Init(modInstance);

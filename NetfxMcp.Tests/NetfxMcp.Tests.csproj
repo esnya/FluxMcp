@@ -14,6 +14,8 @@
     <!-- Unused using directive settings -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RemoveUnusedImports>true</RemoveUnusedImports>
+    <!-- Suppress XML documentation warnings for test projects -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

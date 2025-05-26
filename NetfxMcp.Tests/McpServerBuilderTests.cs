@@ -7,7 +7,7 @@ using NetfxMcp;
 namespace NetfxMcp.Tests;
 
 [TestClass]
-    public class McpServerBuilderTests
+public class McpServerBuilderTests
     {
     private sealed class DummyLogger : INetfxMcpLogger
     {

@@ -23,6 +23,9 @@ internal sealed class DuplexPipe : IDuplexPipe
     }
 
 
+    /// <summary>
+    /// HTTP streaming server implementation for Model Context Protocol communication.
+    /// </summary>
     public class McpHttpStreamingServer : IAsyncDisposable
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "Disposed in DisposeAsync")]
@@ -32,8 +35,19 @@ internal sealed class DuplexPipe : IDuplexPipe
         private readonly HttpListener _listener = new HttpListener();
         private readonly INetfxMcpLogger _logger;
 
+        /// <summary>
+        /// Gets a value indicating whether the HTTP server is currently running.
+        /// </summary>
         public bool IsRunning => _listener.IsListening;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="McpHttpStreamingServer"/> class.
+        /// </summary>
+        /// <param name="logger">The logger instance to use.</param>
+        /// <param name="serverBuilder">Function to build the MCP server with the provided transport.</param>
+        /// <param name="prefix">The HTTP URL prefix to listen on.</param>
+        /// <exception cref="ArgumentNullException">Thrown when logger or serverBuilder is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when prefix is null or empty.</exception>
         public McpHttpStreamingServer(INetfxMcpLogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
         {
             if (serverBuilder is null)
@@ -53,6 +67,11 @@ internal sealed class DuplexPipe : IDuplexPipe
             _mcpServer = serverBuilder(_transport);
         }
 
+        /// <summary>
+        /// Starts the HTTP server asynchronously and begins listening for MCP requests.
+        /// </summary>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             try
@@ -104,6 +123,9 @@ internal sealed class DuplexPipe : IDuplexPipe
             }
         }
 
+        /// <summary>
+        /// Stops the HTTP server and ceases listening for requests.
+        /// </summary>
         public void Stop()
         {
             _logger.Msg("Stopping MCP HTTP server...");
@@ -167,6 +189,10 @@ internal sealed class DuplexPipe : IDuplexPipe
             }
         }
 
+        /// <summary>
+        /// Asynchronously releases all resources used by the HTTP server.
+        /// </summary>
+        /// <returns>A ValueTask representing the asynchronous dispose operation.</returns>
         public async ValueTask DisposeAsync()
         {
             GC.SuppressFinalize(this);

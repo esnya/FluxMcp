@@ -14,6 +14,8 @@
 		<_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<RemoveUnusedImports>True</RemoveUnusedImports>
+		<!-- Suppress XML documentation warnings for test projects -->
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(ResonitePath)'==''">

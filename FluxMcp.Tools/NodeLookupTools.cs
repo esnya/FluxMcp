@@ -9,9 +9,17 @@ using Elements.Core;
 
 namespace FluxMcp.Tools;
 
+/// <summary>
+/// Provides tools for finding and browsing ProtoFlux nodes in the focused world.
+/// </summary>
 [McpServerToolType]
 public static class NodeLookupTools
 {
+    /// <summary>
+    /// Finds a ProtoFlux node by its reference ID.
+    /// </summary>
+    /// <param name="reference">The RefID string of the node to find.</param>
+    /// <returns>The found ProtoFlux node or null if an error occurs.</returns>
     [McpServerTool(Name = "findNode"), Description("Finds a node by its reference ID.")]
     public static object? FindNode(string reference)
     {
@@ -39,6 +47,10 @@ public static class NodeLookupTools
         }
     }
 
+    /// <summary>
+    /// Gets all available ProtoFlux node categories.
+    /// </summary>
+    /// <returns>A collection of category names or null if an error occurs.</returns>
     [McpServerTool(Name = "getCategories"), Description("Get all ProtoFlux node categories.")]
     public static object? GetCategories()
     {
@@ -50,6 +62,11 @@ public static class NodeLookupTools
         });
     }
 
+    /// <summary>
+    /// Lists all ProtoFlux node types in a specific category.
+    /// </summary>
+    /// <param name="category">The category path (e.g., "Math", "Actions", "Actions/IndirectActions").</param>
+    /// <returns>A collection of node type names in the specified category or null if an error occurs.</returns>
     [McpServerTool(Name = "listNodeTypes"), Description("List ProtoFlux nodes in category (e.g. Math, Actions, Actions/IndirectActions). Use this to browse available node types in a specific category.")]
     public static object? ListNodeTypesInCategory(string category)
     {
@@ -59,6 +76,13 @@ public static class NodeLookupTools
         });
     }
 
+    /// <summary>
+    /// Searches for ProtoFlux nodes across all categories by name or functionality.
+    /// </summary>
+    /// <param name="search">The search term to look for in node names.</param>
+    /// <param name="maxItems">Maximum number of results to return.</param>
+    /// <param name="skip">Number of results to skip (for pagination).</param>
+    /// <returns>A collection of matching node type names or null if an error occurs.</returns>
     [McpServerTool(Name = "searchNodeType"), Description("Search for ProtoFlux nodes across all categories. Use this to find nodes by name or functionality. Ideal for discovering available node types when you're not sure of the exact name.")]
     public static object? SearchNodeType(string search, int maxItems, int skip = 0)
     {
@@ -69,6 +93,11 @@ public static class NodeLookupTools
         });
     }
 
+    /// <summary>
+    /// Gets information about any world element by its RefID.
+    /// </summary>
+    /// <param name="refId">The RefID string of the element to retrieve.</param>
+    /// <returns>The found world element or null if an error occurs.</returns>
     [McpServerTool(Name = "getWorldElement"), Description("Gets information about an element by its RefID.")]
     public static object? GetWorldElement(string refId)
     {

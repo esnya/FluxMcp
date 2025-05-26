@@ -10,6 +10,9 @@ using Microsoft.Extensions.AI;
 
 namespace FluxMcp.Tools;
 
+/// <summary>
+/// Provides helper utilities for ProtoFlux node tool operations.
+/// </summary>
 public static class NodeToolHelpers
 {
     internal static World FocusedWorld => Engine.Current.WorldManager.FocusedWorld;
@@ -20,7 +23,6 @@ public static class NodeToolHelpers
         .Append(LocalUserSpace)
         .First();
 
-    // Suppress catching general exceptions for synchronous execution errors
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
     internal static async Task<T> UpdateAction<T>(Slot slot, Func<T> action)
@@ -45,6 +47,12 @@ public static class NodeToolHelpers
         return await completionSource.Task.ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Executes a function and handles any exceptions, returning appropriate error content.
+    /// </summary>
+    /// <typeparam name="T">The return type of the function.</typeparam>
+    /// <param name="func">The function to execute.</param>
+    /// <returns>The result of the function or error content if an exception occurs.</returns>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
     public static object Handle<T>(Func<T> func)
     {
@@ -60,6 +68,12 @@ public static class NodeToolHelpers
         }
     }
 
+    /// <summary>
+    /// Asynchronously executes a function and handles any exceptions, returning appropriate error content.
+    /// </summary>
+    /// <typeparam name="T">The return type of the function.</typeparam>
+    /// <param name="func">The asynchronous function to execute.</param>
+    /// <returns>A task that represents the asynchronous operation, containing the result or error content.</returns>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
     public static async Task<object> HandleAsync<T>(Func<Task<T>> func)
     {

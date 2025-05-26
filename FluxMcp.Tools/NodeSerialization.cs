@@ -7,8 +7,16 @@ using Elements.Core;
 
 namespace FluxMcp.Tools;
 
+/// <summary>
+/// Provides JSON serialization utilities for ProtoFlux nodes and related types.
+/// </summary>
 public static class NodeSerialization
 {
+    /// <summary>
+    /// Registers all custom JSON converters for ProtoFlux types.
+    /// </summary>
+    /// <param name="options">The JsonSerializerOptions to register converters with.</param>
+    /// <exception cref="ArgumentNullException">Thrown when options is null.</exception>
     public static void RegisterConverters(JsonSerializerOptions options)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
@@ -20,8 +28,12 @@ public static class NodeSerialization
     }
 }
 
+/// <summary>
+/// JSON converter for RefID types.
+/// </summary>
 public class RefIDConverter : JsonConverter<RefID>
 {
+    /// <inheritdoc />
     public override RefID Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.String)
@@ -38,6 +50,7 @@ public class RefIDConverter : JsonConverter<RefID>
         return refId;
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, RefID value, JsonSerializerOptions options)
     {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
@@ -45,11 +58,16 @@ public class RefIDConverter : JsonConverter<RefID>
     }
 }
 
+/// <summary>
+/// JSON converter for IWorldElement types.
+/// </summary>
 public class WorldElementConverter : JsonConverter<IWorldElement>
 {
+    /// <inheritdoc />
     public override bool CanConvert(Type typeToConvert)
         => typeToConvert == typeof(IWorldElement);
 
+    /// <inheritdoc />
     public override IWorldElement? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Deserialization of IWorldElement is not supported.");
@@ -62,6 +80,7 @@ public class WorldElementConverter : JsonConverter<IWorldElement>
         writer.WriteString("type", element.GetType().Name);
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, IWorldElement value, JsonSerializerOptions options)
     {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
@@ -83,13 +102,18 @@ public class WorldElementConverter : JsonConverter<IWorldElement>
     }
 }
 
+/// <summary>
+/// JSON converter for ProtoFluxNode types.
+/// </summary>
 public class ProtoFluxNodeConverter : JsonConverter<ProtoFluxNode>
 {
+    /// <inheritdoc />
     public override ProtoFluxNode? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Deserialization of ProtoFluxNode is not supported.");
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, ProtoFluxNode node, JsonSerializerOptions options)
     {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
@@ -115,13 +139,18 @@ public class ProtoFluxNodeConverter : JsonConverter<ProtoFluxNode>
     }
 }
 
+/// <summary>
+/// JSON converter for float3 types.
+/// </summary>
 public class Float3Converter : JsonConverter<float3>
 {
+    /// <inheritdoc />
     public override float3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Deserialization of float3 is not supported.");
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, float3 value, JsonSerializerOptions options)
     {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
