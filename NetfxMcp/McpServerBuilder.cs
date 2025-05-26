@@ -1,7 +1,6 @@
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
-using ResoniteModLoader;
 using System;
 using System.Reflection;
 

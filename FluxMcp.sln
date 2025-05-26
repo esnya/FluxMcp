@@ -11,6 +11,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "FluxMcp.Tools", "FluxMcp.To
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NetfxMcp", "NetfxMcp\NetfxMcp.shproj", "{ACBF9E02-CFEC-4359-8A28-51E86E95DC00}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetfxMcp.Tests", "NetfxMcp.Tests\NetfxMcp.Tests.csproj", "{9676244E-0E1B-44BC-98D4-44E407C0979A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,18 @@ Global
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Release|x64.Build.0 = Release|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Release|x86.ActiveCfg = Release|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Release|x86.Build.0 = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|x64.Build.0 = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Debug|x86.Build.0 = Debug|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|x64.ActiveCfg = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|x64.Build.0 = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|x86.ActiveCfg = Release|Any CPU
+		{9676244E-0E1B-44BC-98D4-44E407C0979A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
