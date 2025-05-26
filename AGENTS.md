@@ -8,7 +8,7 @@
 - Stop the SSE server when the engine shuts down and clear static references.
 - Use Conventional Commit messages with an emoji.
 - Always run `dotnet test NetfxMcp.Tests/NetfxMcp.Tests.csproj` before committing.
-- Currently package retrieval fails, so building and running tests is not possible.
+- Build and test commands run offline once packages are restored. Restoring new packages requires network access.
 
 ## MCP Tool Documentation
 
