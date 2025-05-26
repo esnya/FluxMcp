@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Enhanced static code analysis -->
     <!-- Suppress XML documentation warnings for test projects -->
