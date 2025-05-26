@@ -219,7 +219,7 @@ public static class NodeCreationTools
     /// <summary>
     /// Gets commonly used ProtoFlux types for AI guidance
     /// </summary>
-    /// <returns>Dictionary of type categories and their common types</returns>
+    /// <returns>Guidance string listing common categories and types</returns>
     internal static string GetCommonTypesGuidance()
     {
         return @"Common ProtoFlux types for generic nodes:

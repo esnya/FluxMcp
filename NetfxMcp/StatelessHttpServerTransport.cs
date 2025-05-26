@@ -51,13 +51,13 @@ public sealed class StatelessHttpServerTransport : ITransport
 
                 while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false) && !done)
                 {
-                    while (channel.TryRead(out var mesasge))
+                    while (channel.TryRead(out var queuedMessage))
                     {
                         await _httpBodies.Output.WriteAsync(_messageEventPrefix, cancellationToken).ConfigureAwait(false);
-                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), mesasge, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        await JsonSerializer.SerializeAsync(_httpBodies.Output.AsStream(), queuedMessage, cancellationToken: cancellationToken).ConfigureAwait(false);
                         await _httpBodies.Output.WriteAsync(_messageEventSuffix, cancellationToken).ConfigureAwait(false);
 
-                        if (mesasge is JsonRpcMessageWithId response && response.Id == _pendingRequest)
+                        if (queuedMessage is JsonRpcMessageWithId response && response.Id == _pendingRequest)
                         {
                             done = true;
                             break;
