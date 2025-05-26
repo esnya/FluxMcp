@@ -62,6 +62,7 @@
 
         <ItemGroup>
                 <ProjectReference Include="..\FluxMcp.Tools\FluxMcp.Tools.csproj" />
+                <ProjectReference Include="..\FluxMcp.Server\FluxMcp.Server.csproj" />
         </ItemGroup>
 
 	<ItemGroup>

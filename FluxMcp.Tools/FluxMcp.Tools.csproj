@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FluxMcp.Server\FluxMcp.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System.Net.ServerSentEvents">
       <HintPath>$(ResonitePath)Resonite_Data\Managed\System.Net.ServerSentEvents.dll</HintPath>
       <Private>False</Private>

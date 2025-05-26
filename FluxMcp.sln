@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp", "FluxMcp/FluxMcp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Tools", "FluxMcp.Tools/FluxMcp.Tools.csproj", "{82837CB8-7BD7-413C-9E6B-56193B333A38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Server", "FluxMcp.Server/FluxMcp.Server.csproj", "{D94D912A-B20F-41FB-AD92-3D507177560E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluxMcp.Tests", "FluxMcp.Tests\FluxMcp.Tests.csproj", "{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}"
 EndProject
 Global
@@ -43,6 +45,18 @@ Global
                 {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x64.Build.0 = Release|Any CPU
                 {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x86.ActiveCfg = Release|Any CPU
                 {82837CB8-7BD7-413C-9E6B-56193B333A38}.Release|x86.Build.0 = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x64.ActiveCfg = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x64.Build.0 = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x86.ActiveCfg = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Debug|x86.Build.0 = Debug|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|Any CPU.Build.0 = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x64.ActiveCfg = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x64.Build.0 = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x86.ActiveCfg = Release|Any CPU
+                {D94D912A-B20F-41FB-AD92-3D507177560E}.Release|x86.Build.0 = Release|Any CPU
                 {B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B569EA5F-177D-4116-A011-E3E8AF6BD5DF}.Debug|x64.ActiveCfg = Debug|Any CPU

@@ -7,12 +7,12 @@ namespace FluxMcp;
 
 public static class McpServerBuilder
 {
-    public static IMcpServer Build(IFluxLogger logger, ITransport transport)
+    public static IMcpServer Build(IFluxLogger logger, ITransport transport, Assembly toolsAssembly)
     {
         logger.Debug("Starting to build MCP Server");
 
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();
-        foreach (var type in typeof(NodeToolHelpers).Assembly.GetTypes())
+        foreach (var type in toolsAssembly.GetTypes())
         {
             if (type.GetCustomAttribute<McpServerToolTypeAttribute>() is null)
             {
