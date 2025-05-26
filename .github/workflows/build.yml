@@ -54,13 +54,13 @@ jobs:
           
     # Build and test projects
     - name: Restore
-      run: dotnet restore
+      run: dotnet restore NetfxMcp.Tests/NetfxMcp.Tests.csproj
     
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build NetfxMcp.Tests/NetfxMcp.Tests.csproj --no-restore --configuration Release
     
     - name: Test
-      run: dotnet test --no-restore --no-build
+      run: dotnet test NetfxMcp.Tests/NetfxMcp.Tests.csproj --no-restore --no-build
     
     - name: Move NuGet Packages
       run: mv (Get-ChildItem -Recurse ./ -Include *.nupkg) ./
