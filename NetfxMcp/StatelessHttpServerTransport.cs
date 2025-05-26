@@ -161,6 +161,7 @@ public sealed class StatelessHttpServerTransport : ITransport
     /// <returns>A value task that represents the asynchronous dispose operation.</returns>
     public ValueTask DisposeAsync()
     {
+        _disposeCts.Cancel();
         _disposeCts.Dispose();
         return default;
     }
