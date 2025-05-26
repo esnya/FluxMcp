@@ -106,7 +106,6 @@ public sealed class McpFakeToolTests : IDisposable
         if (_serverCts != null)
         {
             _serverCts.Cancel();
-            _server.Stop();
             await _serverTask.ConfigureAwait(false);
         }
     }
@@ -150,7 +149,6 @@ public sealed class McpFakeToolTests : IDisposable
         try
         {
             _serverCts?.Cancel();
-            _server?.Stop();
             _serverTask?.Wait();
             _server?.DisposeAsync().AsTask().Wait();
         }

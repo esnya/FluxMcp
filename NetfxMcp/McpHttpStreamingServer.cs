@@ -84,6 +84,8 @@ internal sealed class DuplexPipe : IDuplexPipe
                     _logger.Debug("Starting HTTP listener...");
                     _listener.Start();
 
+                    using var registration = cancellationToken.Register(() => _listener.Stop());
+
                     _logger.Msg($"MCP Streamable HTTP server listening on {_listener.Prefixes}");
 
                     _logger.Debug("Listening for incoming requests...");
