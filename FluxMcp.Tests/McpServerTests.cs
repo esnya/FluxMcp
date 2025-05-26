@@ -1,12 +1,6 @@
 ﻿using ModelContextProtocol.Client;
 using ResoniteModLoader;
-using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Logging;
-using System.Net.Sockets;
-using FrooxEngine;
-using Elements.Core;
-using FluxMcp.Tools;
-using Moq;
 
 namespace FluxMcp.Tests;
 
@@ -50,7 +44,7 @@ public sealed class McpServerTests
         var client = await McpClientFactory.CreateAsync(clientTransport).ConfigureAwait(false);
 
         var tools = await client.ListToolsAsync().ConfigureAwait(false);
-        Console.WriteLine($"{tools.Count} tools found:\n{string.Join(", ", tools.Select(t => '\t' + t.Name + "\n"))}");
+        Console.WriteLine($"{tools.Count} tools found: {string.Join(", ", tools.Select(t => t.Name))}");
 
         Assert.IsNotNull(tools, "Tools array should not be null.");
         Assert.IsTrue(tools.Count > 0, "Tools array should not be empty.");

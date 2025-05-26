@@ -124,12 +124,12 @@ public sealed class StatelessHttpServerTransport : ITransport
     });
 
     private ChannelWriter<JsonRpcMessage> MessageWriter => _incomingChannel.Writer;
-    
+
     /// <summary>
     /// Gets the channel reader for receiving JSON-RPC messages.
     /// </summary>
     public ChannelReader<JsonRpcMessage> MessageReader => _incomingChannel.Reader;
-    
+
     /// <summary>
     /// Gets the initialization request parameters, if any have been received.
     /// </summary>
