@@ -170,7 +170,13 @@ public static class NodeToolHelpers
         return name;
     }
 
-    internal static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    /// <summary>
+    /// Calculates the Levenshtein distance between two strings.
+    /// </summary>
+    /// <param name="a">The first string.</param>
+    /// <param name="b">The second string.</param>
+    /// <returns>The Levenshtein distance between the two strings.</returns>
+    public static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {
         if (a.IsEmpty)
         {
@@ -201,7 +207,9 @@ public static class NodeToolHelpers
                     previous[j - 1] + cost);
             }
 
-            (previous, current) = (current, previous);
+            var temp = previous;
+            previous = current;
+            current = temp;
         }
 
         return previous[b.Length];
