@@ -5,6 +5,7 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Server;
 using NetfxMcp;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace FluxMcp.Tests;
@@ -48,12 +49,11 @@ static class McpFakeTools
     }
 }
 
-internal sealed class TestLogger : INetfxMcpLogger
+internal sealed class TestLogger : ILogger
 {
-    public void Debug(string message) => System.Diagnostics.Debug.WriteLine(message);
-    public void DebugFunc(Func<string> messageFunc) => System.Diagnostics.Debug.WriteLine(messageFunc());
-    public void Msg(string message) => System.Diagnostics.Debug.WriteLine(message);
-    public void Warn(string message) => System.Diagnostics.Debug.WriteLine(message);
+    public IDisposable? BeginScope<TState>(TState state) => null;
+    public bool IsEnabled(LogLevel logLevel) => false;
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
 }
 
 [TestClass]

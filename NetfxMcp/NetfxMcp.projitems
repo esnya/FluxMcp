@@ -9,7 +9,6 @@
     <Import_RootNamespace>NetfxMcp</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)INetfxMcpLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)McpHttpStreamingServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)McpServerBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StatelessHttpServerTransport.cs" />

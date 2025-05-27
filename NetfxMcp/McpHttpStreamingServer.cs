@@ -1,5 +1,6 @@
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Pipelines;
 using System.Net;
@@ -33,7 +34,7 @@ internal sealed class DuplexPipe : IDuplexPipe
 
         private readonly IMcpServer _mcpServer;
         private readonly HttpListener _listener = new HttpListener();
-        private readonly INetfxMcpLogger _logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets a value indicating whether the HTTP server is currently running.
@@ -48,7 +49,7 @@ internal sealed class DuplexPipe : IDuplexPipe
         /// <param name="prefix">The HTTP URL prefix to listen on.</param>
         /// <exception cref="ArgumentNullException">Thrown when logger or serverBuilder is null.</exception>
         /// <exception cref="ArgumentException">Thrown when prefix is null or empty.</exception>
-        public McpHttpStreamingServer(INetfxMcpLogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
+        public McpHttpStreamingServer(ILogger logger, Func<ITransport, IMcpServer> serverBuilder, string prefix = "http://+:8080/")
         {
             if (serverBuilder is null)
             {
@@ -76,19 +77,19 @@ internal sealed class DuplexPipe : IDuplexPipe
         {
             try
             {
-                _logger.Debug("Starting MCP Server...");
+                _logger.LogDebug("Starting MCP Server...");
                 var server = _mcpServer.RunAsync(cancellationToken);
 
                 try
                 {
-                    _logger.Debug("Starting HTTP listener...");
+                    _logger.LogDebug("Starting HTTP listener...");
                     _listener.Start();
 
                     using var registration = cancellationToken.Register(() => _listener.Stop());
 
-                    _logger.Msg($"MCP Streamable HTTP server listening on {_listener.Prefixes}");
+                    _logger.LogInformation("MCP Streamable HTTP server listening on {Prefixes}", _listener.Prefixes);
 
-                    _logger.Debug("Listening for incoming requests...");
+                    _logger.LogDebug("Listening for incoming requests...");
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         HttpListenerContext ctx;
@@ -105,7 +106,7 @@ internal sealed class DuplexPipe : IDuplexPipe
                             break;
                         }
 
-                        _logger.Debug($"Received request: {ctx.Request.HttpMethod} {ctx.Request.Url}");
+                        _logger.LogDebug("Received request: {Method} {Url}", ctx.Request.HttpMethod, ctx.Request.Url);
                         await HandleContextAsync(ctx, cancellationToken).ConfigureAwait(false);
                     }
                 }
@@ -116,12 +117,12 @@ internal sealed class DuplexPipe : IDuplexPipe
             }
             catch (Exception ex)
             {
-                _logger.Warn($"Error in StartAsync: {ex.Message}");
+                _logger.LogWarning(ex, "Error in StartAsync");
                 throw;
             }
             finally
             {
-                _logger.Msg("MCP HTTP server stopped.");
+                _logger.LogInformation("MCP HTTP server stopped.");
             }
         }
 
@@ -130,7 +131,7 @@ internal sealed class DuplexPipe : IDuplexPipe
         /// </summary>
         public void Stop()
         {
-            _logger.Msg("Stopping MCP HTTP server...");
+            _logger.LogInformation("Stopping MCP HTTP server...");
             _listener.Stop();
         }
 
@@ -160,10 +161,10 @@ internal sealed class DuplexPipe : IDuplexPipe
                 // response.StatusCode = 202; // Accepted
                 response.AddHeader("Content-Type", "text/event-stream");
 
-                _logger.Debug($"Handling request: {request.HttpMethod} {request.Url}");
+                _logger.LogDebug("Handling request: {Method} {Url}", request.HttpMethod, request.Url);
                 var duplexPipe = new DuplexPipe(PipeReader.Create(request.InputStream), PipeWriter.Create(response.OutputStream));
                 var bodyWritten = await _transport.HandlePostRequest(duplexPipe, cancellationToken).ConfigureAwait(false);
-                _logger.DebugFunc(() => $"Request body written: {bodyWritten}");
+                _logger.LogDebug("Request body written: {Written}", bodyWritten);
                 await response.OutputStream.FlushAsync(cancellationToken).ConfigureAwait(false);
 
                 try
@@ -172,12 +173,12 @@ internal sealed class DuplexPipe : IDuplexPipe
                 }
                 catch (HttpListenerException ex)
                 {
-                    _logger.Warn($"Error closing response: {ex.Message}");
+                    _logger.LogWarning(ex, "Error closing response");
                 }
             }
             catch (Exception ex)
             {
-                _logger.Warn($"{ex.GetType()}: {ex.Message}\n\t{ex.StackTrace}");
+                _logger.LogWarning(ex, "{Type}: {Message}\n\t{Stack}", ex.GetType(), ex.Message, ex.StackTrace);
                 var response = ctx.Response;
                 if (response.OutputStream.CanWrite)
                 {
@@ -201,14 +202,14 @@ internal sealed class DuplexPipe : IDuplexPipe
 
             try
             {
-                _logger.Debug("Disposing MCP HTTP server...");
+                _logger.LogDebug("Disposing MCP HTTP server...");
                 Stop();
                 await _mcpServer.DisposeAsync().ConfigureAwait(false);
                 _listener.Close();
             }
             catch (Exception ex)
             {
-                _logger.Warn($"Error disposing MCP HTTP server: {ex.Message}");
+                _logger.LogWarning(ex, "Error disposing MCP HTTP server");
                 throw;
             }
         }

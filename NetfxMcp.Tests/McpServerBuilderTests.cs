@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
 using NetfxMcp;
 
@@ -9,12 +10,11 @@ namespace NetfxMcp.Tests;
 [TestClass]
 public class McpServerBuilderTests
     {
-    private sealed class DummyLogger : INetfxMcpLogger
+    private sealed class DummyLogger : ILogger
     {
-        public void Debug(string message) { }
-        public void Warn(string message) { }
-        public void Msg(string message) { }
-        public void DebugFunc(Func<string> messageFunc) { }
+        public IDisposable? BeginScope<TState>(TState state) => null;
+        public bool IsEnabled(LogLevel logLevel) => false;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
     }
 
     private sealed class DummyTransport : ITransport

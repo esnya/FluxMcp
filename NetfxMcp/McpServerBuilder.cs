@@ -1,5 +1,6 @@
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;
 
@@ -18,7 +19,7 @@ public static class McpServerBuilder
     /// <param name="toolsAssembly">The assembly to scan for MCP tools.</param>
     /// <returns>A configured MCP server instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-    public static IMcpServer Build(INetfxMcpLogger logger, ITransport transport, Assembly toolsAssembly)
+    public static IMcpServer Build(ILogger logger, ITransport transport, Assembly toolsAssembly)
     {
         if (logger is null)
         {
@@ -33,7 +34,7 @@ public static class McpServerBuilder
             throw new ArgumentNullException(nameof(toolsAssembly));
         }
 
-        logger.Debug("Starting to build MCP Server");
+        logger.LogDebug("Starting to build MCP Server");
 
         var toolCollection = new McpServerPrimitiveCollection<McpServerTool>();
         foreach (var type in toolsAssembly.GetTypes())
@@ -50,10 +51,10 @@ public static class McpServerBuilder
                     continue;
                 }
 
-                logger.Debug($"Adding tool from method {method.Name} in type {type.FullName}");
+                logger.LogDebug("Adding tool from method {Method} in type {Type}", method.Name, type.FullName);
                 if (!method.IsStatic)
                 {
-                    logger.Warn($"Skipping non-static method {method.Name} in type {type.FullName}");
+                    logger.LogWarning("Skipping non-static method {Method} in type {Type}", method.Name, type.FullName);
                     continue;
                 }
 
@@ -64,13 +65,13 @@ public static class McpServerBuilder
                 }
                 catch (Exception ex)
                 {
-                    logger.Warn($"Error creating tool for method {method.Name} in type {type.FullName}: {ex.Message}");
+                    logger.LogWarning(ex, "Error creating tool for method {Method} in type {Type}", method.Name, type.FullName);
                     throw;
                 }
             }
         }
 
-        logger.Debug("Finished collecting tools for MCP Server");
+        logger.LogDebug("Finished collecting tools for MCP Server");
 
         var options = new McpServerOptions
         {
@@ -83,7 +84,7 @@ public static class McpServerBuilder
             },
         };
 
-        logger.Debug("Creating MCP Server with collected options");
+        logger.LogDebug("Creating MCP Server with collected options");
         return McpServerFactory.Create(transport, options);
     }
 }
