@@ -5,7 +5,7 @@
 - Manage the lifecycle of servers carefully:
 - Stop the SSE server when the engine shuts down and clear static references.
 - Use Conventional Commit messages with an emoji.
-- Always run `dotnet test NetfxMcp.Tests/NetfxMcp.Tests.csproj` before committing.
+- Always run `dotnet test FluxMcp.sln` before committing.
 - Build and test commands run offline once packages are restored. Restoring new packages requires network access.
 - Avoid splitting property values containing paths with spaces across lines, as it can cause path resolution failures.
 - Use `.editorconfig` for configuring compiler warnings and code style settings across the entire solution.

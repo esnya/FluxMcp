@@ -1,7 +1,16 @@
 <Project>
   <!-- Basic build settings -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildProjectName)' == 'NetfxMcp.Tests'">
+    <TargetFrameworks>net472;net9.0</TargetFrameworks>
+    <TargetFramework></TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
