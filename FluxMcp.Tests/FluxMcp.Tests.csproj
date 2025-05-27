@@ -4,37 +4,41 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
 		<ProjectReference Include="..\FluxMcp\FluxMcp.csproj" />
 
-		<Reference Include="System.Threading.Channels">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll</HintPath>
-		</Reference>
+                <Reference Include="System.Threading.Channels" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\System.Threading.Channels.dll</HintPath>
+                </Reference>
 
-		<Reference Include="ResoniteModLoader">
-			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
-		</Reference>
-		<Reference Include="HarmonyLib">
-			<HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
-			<HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
-		</Reference>
-		<Reference Include="FrooxEngine">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-		</Reference>
-		<Reference Include="Elements.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
-		</Reference>
-		<Reference Include="ProtoFlux.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
-		</Reference>
-		<Reference Include="ProtoFluxBindings">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
-		</Reference>
-		<Reference Include="Elements.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
-		</Reference>
-		<Reference Include="System.Text.Json">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Text.Json.dll</HintPath>
-		</Reference>
-		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
-			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
-		</Reference>
-	</ItemGroup>
+                <Reference Include="ResoniteModLoader" Condition="Exists('$(ResonitePath)Libraries\ResoniteModLoader.dll')">
+                        <HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+                </Reference>
+                <Reference Include="HarmonyLib" Condition="Exists('$(ResonitePath)rml_libs\0Harmony.dll')">
+                        <HintPath>$(ResonitePath)rml_libs\0Harmony.dll</HintPath>
+                </Reference>
+                <Reference Include="FrooxEngine" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+                </Reference>
+                <Reference Include="Elements.Core" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+                </Reference>
+                <Reference Include="ProtoFlux.Core" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+                </Reference>
+                <Reference Include="ProtoFluxBindings" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
+                </Reference>
+                <Reference Include="Elements.Core" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+                </Reference>
+                <Reference Include="System.Text.Json" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\System.Text.Json.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\System.Text.Json.dll</HintPath>
+                </Reference>
+                <Reference Include="ResoniteHotReloadLib" Condition="Exists('$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll') and '$(Configuration)'=='Debug'">
+                        <HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
+                </Reference>
+        </ItemGroup>
+
+        <ItemGroup Condition="!Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+                <ProjectReference Include="..\ResoniteStubs\ResoniteStubs.csproj" />
+                <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+        </ItemGroup>
 </Project>

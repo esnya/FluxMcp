@@ -42,35 +42,40 @@
 		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 
-		<Reference Include="System.Net.ServerSentEvents">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\System.Net.ServerSentEvents.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="ResoniteModLoader">
-			<HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="FrooxEngine">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="ProtoFlux.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="ProtoFluxBindings">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Elements.Core">
-			<HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
-			<HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+                <Reference Include="System.Net.ServerSentEvents" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\System.Net.ServerSentEvents.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="ResoniteModLoader" Condition="Exists('$(ResonitePath)Libraries\ResoniteModLoader.dll')">
+                        <HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="FrooxEngine" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="ProtoFlux.Core" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="ProtoFluxBindings" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="Elements.Core" Condition="Exists('$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll')">
+                        <HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+                <Reference Include="ResoniteHotReloadLib" Condition="Exists('$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll') and '$(Configuration)'=='Debug'">
+                        <HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
+                        <Private>False</Private>
+                </Reference>
+        </ItemGroup>
+
+        <ItemGroup Condition="!Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+                <ProjectReference Include="..\ResoniteStubs\ResoniteStubs.csproj" />
+                <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+        </ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
 		<Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods" Importance="high" />
