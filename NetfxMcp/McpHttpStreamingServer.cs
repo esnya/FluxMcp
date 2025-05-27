@@ -194,7 +194,7 @@ internal sealed class DuplexPipe : IDuplexPipe
                     response.Close();
                     return;
                 }
-                else if (request.Url.AbsolutePath != "/mcp")
+                else if (request.Url?.AbsolutePath != "/mcp")
                 {
                     response.StatusCode = 404; // Not Found
                     response.Close();

@@ -25,10 +25,12 @@ public static class McpServerBuilder
         {
             throw new ArgumentNullException(nameof(logger));
         }
+
         if (transport is null)
         {
             throw new ArgumentNullException(nameof(transport));
         }
+
         if (toolsAssembly is null)
         {
             throw new ArgumentNullException(nameof(toolsAssembly));

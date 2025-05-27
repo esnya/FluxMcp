@@ -124,6 +124,11 @@ public partial class FluxMcpMod : ResoniteMod
         Init(this);
     }
 
+    ~FluxMcpMod()
+    {
+        StopHttpServer();
+    }
+
     private static void Init(ResoniteMod modInstance)
     {
 #if DEBUG
