@@ -96,7 +96,7 @@ public static class NodeToolHelpers
     }
 
 
-    private static AIContent ToContent(object? item)
+    private static AIContent ToAIContent(object? item)
     {
         if (item is AIContent ai)
         {
@@ -111,38 +111,22 @@ public static class NodeToolHelpers
             var json = JsonSerializer.Serialize<IWorldElement>(worldElement, JsonOptions);
             return new TextContent(json);
         }
-        else
-        {
-            return new TextContent(JsonSerializer.Serialize(item, JsonOptions));
-        }
+
+        return new TextContent(JsonSerializer.Serialize(item, JsonOptions));
     }
+
+    private static AIContent ToContent(object? item) => ToAIContent(item);
 
     private static object MapResult(object? result)
     {
-
-        if (result is AIContent content)
-        {
-            return content;
-        }
-        else if (result is string str)
-        {
-            return new TextContent(str);
-        }
-        else if (result is IWorldElement worldElement)
-        {
-            var json = JsonSerializer.Serialize<IWorldElement>(worldElement, JsonOptions);
-            return new TextContent(json);
-        }
-        else if (result is System.Collections.IEnumerable seq)
+        if (result is System.Collections.IEnumerable seq && result is not string)
         {
             return seq.Cast<object?>()
                 .Select(ToContent)
                 .ToList();
         }
-        else
-        {
-            return new TextContent(JsonSerializer.Serialize(result, JsonOptions));
-        }
+
+        return ToAIContent(result);
     }
 
     internal static string CleanTypeName(string name)
