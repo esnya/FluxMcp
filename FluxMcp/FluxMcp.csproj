@@ -11,9 +11,6 @@
 
   <ItemGroup>
     <None Include=".github\**\" />
-    <PackageReference Include="System.IO.Pipelines" />
-    <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <Import Project="..\ResoniteMod.props" />

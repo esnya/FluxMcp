@@ -23,6 +23,14 @@
       <HintPath>$(ResonitePath)rml_libs/ResoniteHotReloadLib.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions">
+      <HintPath>$(ResonitePath)Resonite_Data/Managed/System.Threading.Tasks.Extensions.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>$(ResonitePath)Resonite_Data/Managed/System.Memory.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Use ResoniteStubs for StubDebug/StubRelease builds -->

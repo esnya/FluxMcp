@@ -16,7 +16,7 @@ FluxMcp uses separate build configurations for different environments:
 
 - **Debug/Release**: For local development with real Resonite assemblies installed
 - **StubDebug/StubRelease**: For CI environments without real Resonite assemblies
-  
+
 The solution automatically selects the appropriate assembly references based on the configuration:
 - Debug/Release configurations reference real Resonite assemblies when available
 - StubDebug/StubRelease configurations always use ResoniteStubs project for stub implementations
