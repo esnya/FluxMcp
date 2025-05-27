@@ -5,17 +5,9 @@
     <ResoniteAssemblyPrivate Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">False</ResoniteAssemblyPrivate>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
     <Reference Include="FrooxEngine">
       <HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-      <Private>$(ResoniteAssemblyPrivate)</Private>
-    </Reference>
-    <Reference Include="ProtoFlux.Core">
-      <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
-      <Private>$(ResoniteAssemblyPrivate)</Private>
-    </Reference>
-    <Reference Include="ProtoFluxBindings">
-      <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
     <Reference Include="Elements.Core">
@@ -33,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="!Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)ResoniteStubs\ResoniteStubs.csproj" />
-    <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)ResoniteStubs\ResoniteStubs.csproj" ReferenceOutputAssembly="true" />
+    <PackageReference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+    <PackageReference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
   <Import Project="..\NetfxMcp\NetfxMcp.projitems" Label="Shared" />
 </Project>
