@@ -20,7 +20,7 @@ public class ResoniteLogger : ILogger
     {
         if (formatter is null)
             throw new ArgumentNullException(nameof(formatter));
-        
+
         switch (logLevel)
         {
             case LogLevel.Trace:
