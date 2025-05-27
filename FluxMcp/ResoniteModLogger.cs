@@ -9,31 +9,34 @@ namespace FluxMcp;
 /// </summary>
 public class ResoniteLogger : ILogger
 {
+    /// <inheritdoc />
     public IDisposable? BeginScope<TState>(TState state) => null;
 
+    /// <inheritdoc />
     public bool IsEnabled(LogLevel logLevel) => true;
 
+    /// <inheritdoc />
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        var message = formatter(state, exception);
         switch (logLevel)
         {
             case LogLevel.Trace:
             case LogLevel.Debug:
+                if (!ResoniteMod.IsDebugEnabled()) return;
                 if (exception is null)
                 {
-                    ResoniteMod.Debug(message);
+                    ResoniteMod.Debug(formatter(state, exception));
                 }
                 else
                 {
-                    ResoniteMod.Debug($"{message}: {exception.Message}");
+                    ResoniteMod.Debug($"{formatter(state, exception)}: {exception.Message}");
                 }
                 break;
             case LogLevel.Information:
-                ResoniteMod.Msg(message);
+                ResoniteMod.Msg(formatter(state, exception));
                 break;
             default:
-                ResoniteMod.Warn(message);
+                ResoniteMod.Warn(formatter(state, exception));
                 break;
         }
     }
