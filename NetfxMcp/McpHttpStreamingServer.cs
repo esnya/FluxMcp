@@ -253,7 +253,7 @@ internal sealed class DuplexPipe : IDuplexPipe
         /// Asynchronously releases all resources used by the HTTP server.
         /// </summary>
         /// <returns>A ValueTask representing the asynchronous dispose operation.</returns>
-        public async ValueTask DisposeAsync()
+        public async System.Threading.Tasks.ValueTask DisposeAsync()
         {
             GC.SuppressFinalize(this);
 

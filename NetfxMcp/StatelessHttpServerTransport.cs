@@ -34,7 +34,7 @@ public sealed class StatelessHttpServerTransport : ITransport
             _parentTransport = parentTransport;
         }
 
-        public async ValueTask<bool> RunAsync(CancellationToken cancellationToken)
+        public async System.Threading.Tasks.ValueTask<bool> RunAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -85,7 +85,7 @@ public sealed class StatelessHttpServerTransport : ITransport
         }
 
 
-        private async ValueTask OnMessageReceivedAsync(JsonRpcMessage? message, CancellationToken cancellationToken)
+        private async System.Threading.Tasks.ValueTask OnMessageReceivedAsync(JsonRpcMessage? message, CancellationToken cancellationToken)
         {
             if (message is null)
             {
@@ -109,7 +109,7 @@ public sealed class StatelessHttpServerTransport : ITransport
 
         public ChannelReader<JsonRpcMessage> MessageReader => throw new NotSupportedException("JsonRpcMessage.RelatedTransport should only be used for sending messages.");
 
-        public ValueTask DisposeAsync()
+        public System.Threading.Tasks.ValueTask DisposeAsync()
         {
             return default;
         }
@@ -159,7 +159,7 @@ public sealed class StatelessHttpServerTransport : ITransport
     /// Disposes the transport asynchronously.
     /// </summary>
     /// <returns>A value task that represents the asynchronous dispose operation.</returns>
-    public ValueTask DisposeAsync()
+    public System.Threading.Tasks.ValueTask DisposeAsync()
     {
         _disposeCts.Cancel();
         _disposeCts.Dispose();

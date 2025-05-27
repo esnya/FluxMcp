@@ -176,7 +176,7 @@ public static class NodeToolHelpers
     /// <param name="a">The first string.</param>
     /// <param name="b">The second string.</param>
     /// <returns>The Levenshtein distance between the two strings.</returns>
-    public static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    public static int LevenshteinDistance(System.ReadOnlySpan<char> a, System.ReadOnlySpan<char> b)
     {
         if (a.IsEmpty)
         {
@@ -188,8 +188,8 @@ public static class NodeToolHelpers
             return a.Length;
         }
 
-        Span<int> previous = new int[b.Length + 1];
-        Span<int> current = new int[b.Length + 1];
+        System.Span<int> previous = new int[b.Length + 1];
+        System.Span<int> current = new int[b.Length + 1];
 
         for (int j = 0; j <= b.Length; j++)
         {

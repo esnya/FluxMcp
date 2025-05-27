@@ -20,7 +20,7 @@ public class McpServerBuilderTests
         private readonly Channel<JsonRpcMessage> _channel = Channel.CreateUnbounded<JsonRpcMessage>();
         public ChannelReader<JsonRpcMessage> MessageReader => _channel.Reader;
         public Task SendMessageAsync(JsonRpcMessage message, CancellationToken cancellationToken = default) => _channel.Writer.WriteAsync(message, cancellationToken).AsTask();
-        public ValueTask DisposeAsync() => default;
+        public System.Threading.Tasks.ValueTask DisposeAsync() => default;
     }
 
     [McpServerToolType]
