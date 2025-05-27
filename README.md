@@ -18,3 +18,7 @@ A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoade
 ## Development Requirements
 
 For development, you will need the [ResoniteHotReloadLib](https://github.com/Nytra/ResoniteHotReloadLib) to be able to hot reload your mod with DEBUG build.
+
+## Planned .NET Upgrade
+
+FluxMcp currently targets .NET Framework 4.7.2. A move to .NET 9 is planned once the runtime stabilizes. Dependencies and build steps will change accordingly, so keep an eye on this repository for updated instructions.
