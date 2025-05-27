@@ -1,8 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
   </PropertyGroup>
@@ -10,22 +6,7 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest" Version="3.6.4" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
     <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <!-- Code analysis packages -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
   <Import Project="..\NetfxMcp\NetfxMcp.projitems" Label="Shared" />
 </Project>

@@ -1,9 +1,7 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
-using NetfxMcp;
 
 namespace NetfxMcp.Tests;
 

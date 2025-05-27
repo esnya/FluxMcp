@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-               <Deterministic>true</Deterministic>
-               <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-               <DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
-               <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-               <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-               <WarningLevel>9999</WarningLevel>
+		<DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
        </PropertyGroup>
 
 	<PropertyGroup>
@@ -34,26 +31,12 @@
         </PropertyGroup>
 
 	<PropertyGroup Condition="'$(ResonitePath)'==''">
-		<!-- If you don't want to provide a ResonitePath in dotnet build, you can specify one here -->
 		<ResonitePath>$(MSBuildThisFileDirectory)Resonite/</ResonitePath>
-		<ResonitePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</ResonitePath>
-		<ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include=".github\**\" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
-		<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
 		<PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
 		<PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
 		<PackageReference Include="System.Threading.Channels" Version="9.0.0" />

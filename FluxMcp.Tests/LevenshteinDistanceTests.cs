@@ -1,5 +1,4 @@
 using FluxMcp.Tools;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FluxMcp.Tests;
 
