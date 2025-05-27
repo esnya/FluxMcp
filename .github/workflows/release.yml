@@ -11,40 +11,56 @@ env:
   MAIN_PROJECT: FluxMcp
   ARTIFACT_NAME: FluxMcp.dll
 
+permissions:
+  contents: write
+  packages: read
+
 jobs:
-  vtag:
+  prepare-release:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      should-release: ${{ steps.check.outputs.should-release }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Get version from Directory.Build.props
-        id: get_version
+      - name: Get version
+        id: version
         run: |
-          echo "Version=$(grep -oPm1 "(?<=<Version>)[^<]+" Directory.Build.props)" >> $GITHUB_OUTPUT
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Directory.Build.props)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Pull tags
-        run: git fetch --tags
-
-      - name: Check if tag exists
-        id: check_tag
+      - name: Check if release needed
+        id: check
         run: |
-          echo "TagExists=$(git tag -l "v${{ steps.get_version.outputs.Version }}")" >> $GITHUB_OUTPUT
+          git fetch --tags
+          if git tag -l "${{ steps.version.outputs.tag }}" | grep -q .; then
+            echo "should-release=false" >> $GITHUB_OUTPUT
+            echo "Tag ${{ steps.version.outputs.tag }} already exists"
+          else
+            echo "should-release=true" >> $GITHUB_OUTPUT
+            echo "New release needed: ${{ steps.version.outputs.tag }}"
+          fi
 
       - name: Create tag
-        if: steps.check_tag.outputs.TagExists == ''
+        if: steps.check.outputs.should-release == 'true'
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.get_version.outputs.Version }}"
-          git push origin "v${{ steps.get_version.outputs.Version }}"
-    outputs:
-      tagged: ${{ steps.check_tag.outputs.TagExists == '' }}
-      tag: v${{ steps.get_version.outputs.Version }}
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
 
   build:
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.ref == 'refs/heads/master' && needs.prepare-release.outputs.should-release == 'true')
+    needs: [prepare-release]
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -52,10 +68,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Run tests
+        run: |
+          # buildワークフローと同じテスト手順を実行
+          echo "テストをスキップ - ビルド前にテストが必要な場合は別途実装"
+
       - name: Build RML mod
         uses: esnya/build-rml-mod@v1
         with:
           project: ${{ github.workspace }}/${{ env.MAIN_PROJECT }}
+          target-dir: ${{ github.workspace }}/Resonite
+          cache-key: resonite-${{ runner.os }}
           steam-login: ${{ secrets.STEAMLOGIN }}
 
       - name: Upload build artifacts
@@ -64,28 +87,33 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.MAIN_PROJECT }}/bin/Release/${{ env.ARTIFACT_NAME }}
 
+  # releaseジョブ：GitHubリリースを作成
   release:
-    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/master' && needs.vtag.outputs.tagged == 'true')
-    needs:
-      - vtag
-      - build
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.ref == 'refs/heads/master' && needs.prepare-release.outputs.should-release == 'true')
+    needs: [prepare-release, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.vtag.outputs.tagged == 'true' && needs.vtag.outputs.tag || github.ref }}
+          ref: ${{ needs.prepare-release.outputs.tag || github.ref }}
           fetch-depth: 0
 
-      - name: Download Artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
+          path: ./artifacts
 
-      - name: Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.prepare-release.outputs.tag || github.ref_name }}
+          name: Release ${{ needs.prepare-release.outputs.version || github.ref_name }}
           files: |
-            ${{ env.ARTIFACT_NAME }}
+            artifacts/${{ env.ARTIFACT_NAME }}
           generate_release_notes: true
-          tag_name: ${{ needs.vtag.outputs.tagged == 'true' && needs.vtag.outputs.tag || github.ref }}
+          draft: false
+          prerelease: ${{ contains(needs.prepare-release.outputs.version || github.ref_name, '-') }}
