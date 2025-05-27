@@ -1,36 +1,68 @@
 <Project>
+  <!-- Basic build settings -->
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <Nullable>enable</Nullable>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <DelaySign>False</DelaySign>
+  </PropertyGroup>
+
+  <!-- Code quality and analysis settings -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <AnalysisMode>All</AnalysisMode>
+    <WarningLevel>9999</WarningLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RemoveUnusedImports>true</RemoveUnusedImports>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
   </PropertyGroup>
 
+  <!-- Debug settings -->
+  <PropertyGroup>
+    <DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
+  </PropertyGroup>
+
+  <!-- Package and license information -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Authors>esnya</Authors>
+    <Copyright>Copyright (c) 2025 $(Authors)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!-- Repository information -->
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/esnya/FluxMcp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+  </PropertyGroup>
+
+  <!-- Resonite environment configuration -->
   <PropertyGroup Condition="'$(ResonitePath)'==''">
     <ResonitePath>$(MSBuildThisFileDirectory)Resonite/</ResonitePath>
     <ResonitePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</ResonitePath>
     <ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
   </PropertyGroup>
 
+  <!-- Resonite mod settings -->
   <PropertyGroup>
-    <Deterministic>true</Deterministic>
     <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-    <WarningLevel>9999</WarningLevel>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <!-- テストプロジェクト共通設定 -->
+  <!-- Test project specific settings -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
+  <!-- Common package references -->
   <ItemGroup>
+    <!-- Code analysis -->
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -39,11 +71,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+
+    <!-- Runtime -->
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
     <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
   </ItemGroup>
 
-  <!-- テスト共通パッケージ -->
+  <!-- Test-specific packages -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

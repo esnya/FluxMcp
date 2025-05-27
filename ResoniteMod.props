@@ -1,0 +1,72 @@
+<Project>
+  <!-- Determine if Resonite assemblies should be copied to output -->
+  <PropertyGroup>
+    <ResoniteAssemblyPrivate Condition="$(MSBuildProjectName.EndsWith('.Tests'))">True</ResoniteAssemblyPrivate>
+    <ResoniteAssemblyPrivate Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">False</ResoniteAssemblyPrivate>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="FrooxEngine">
+      <HintPath>$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="ProtoFlux.Core">
+      <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="ProtoFluxBindings">
+      <HintPath>$(ResonitePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="Elements.Core">
+      <HintPath>$(ResonitePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="ResoniteModLoader">
+      <HintPath>$(ResonitePath)Libraries\ResoniteModLoader.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+    <Reference Include="ResoniteHotReloadLib" Condition="'$(Configuration)'=='Debug'">
+      <HintPath>$(ResonitePath)rml_libs\ResoniteHotReloadLib.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)ResoniteStubs\ResoniteStubs.csproj" />
+    <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DllsToCopy Condition="'$(DllsToCopy)'==''">
+      ModelContextProtocol.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll</DllsToCopy>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"
+    Condition="'$(CopyToMods)'=='true' and !$(MSBuildProjectName.EndsWith('.Tests'))">
+    <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods"
+      Importance="high" />
+    <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ResonitePath)rml_mods"
+      ContinueOnError="true" />
+  </Target>
+
+  <Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent"
+    Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug' and !$(MSBuildProjectName.EndsWith('.Tests'))">
+    <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods"
+      Importance="high" />
+    <Copy SourceFiles="$(TargetDir)$(TargetFileName)"
+      DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent"
+    Condition="'$(CopyToMods)'=='true' and !$(MSBuildProjectName.EndsWith('.Tests'))">
+    <ItemGroup>
+      <NuGetLibs Include="@(ReferenceCopyLocalPaths)"
+        Condition="'%(Extension)'=='.dll' and $(DllsToCopy.IndexOf('%(Filename)%(Extension)')) != -1" />
+    </ItemGroup>
+    <Message Text="Copying @(NuGetLibs->'%(Filename)%(Extension)', ', ') to $(ResonitePath)rml_libs"
+      Importance="high" />
+    <Copy SourceFiles="@(NuGetLibs)" DestinationFolder="$(ResonitePath)rml_libs"
+      SkipUnchangedFiles="true" ContinueOnError="true" />
+  </Target>
+</Project>
