@@ -48,13 +48,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-9.x-nuget
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
-      - name: Build solution
-        run: |
-          dotnet build ResoniteStubs/ResoniteStubs.csproj --configuration StubRelease
-          dotnet build --configuration StubRelease
+      - name: Build Stubs
+        run: dotnet build ResoniteStubs/ResoniteStubs.csproj --configuration StubRelease
+
+      - name: Build FluxMcp
+        run: dotnet build --configuration StubRelease
 
       - name: Run FluxMcp.Tests
         run: dotnet test --configuration StubRelease --logger trx --results-directory TestResults

@@ -23,11 +23,27 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RemoveUnusedImports>true</RemoveUnusedImports>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <!-- Suppress NU1605 package downgrade warnings for compatibility with ModelContextProtocol dependencies -->
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <!-- Debug settings -->
   <PropertyGroup>
     <DebugType Condition="'$(Configuration)'=='Debug'">embedded</DebugType>
+  </PropertyGroup>
+
+  <!-- Stub configuration settings -->
+  <PropertyGroup Condition="'$(Configuration)'=='StubDebug'">
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='StubRelease'">
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <!-- Package and license information -->
