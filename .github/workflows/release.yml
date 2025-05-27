@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - ci
     tags:
       - v*
 
@@ -57,10 +58,6 @@ jobs:
           git push origin "${{ steps.version.outputs.tag }}"
 
   build:
-    if: |
-      startsWith(github.ref, 'refs/tags/v') ||
-      (github.ref == 'refs/heads/master' && needs.prepare-release.outputs.should-release == 'true')
-    needs: [prepare-release]
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -68,18 +65,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run tests
-        run: |
-          # buildワークフローと同じテスト手順を実行
-          echo "テストをスキップ - ビルド前にテストが必要な場合は別途実装"
-
       - name: Build RML mod
         uses: esnya/build-rml-mod@v1
         with:
-          project: ${{ github.workspace }}/${{ env.MAIN_PROJECT }}
-          target-dir: ${{ github.workspace }}/Resonite
-          cache-key: resonite-${{ runner.os }}
           steam-login: ${{ secrets.STEAMLOGIN }}
+          project: ${{ github.workspace }}/${{ env.MAIN_PROJECT }}
+          target-dir: ${{ github.workspace }}/bin/Release
+          cache-key: rml-mod-${{ github.ref_name }}-Release
+        env:
+          ResonitePath: ${{ github.workspace }}/Resonite/
+
+      - name: Test
+        run: |
+          dotnet test FluxMcp.Tests/FluxMcp.Tests.csproj --no-restore --no-build --configuration Release --logger trx --results-directory TestResults
+          dotnet test NetfxMcp.Tests/NetfxMcp.Tests.csproj --no-restore --no-build --configuration Release --logger trx --results-directory TestResults
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -87,7 +86,6 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.MAIN_PROJECT }}/bin/Release/${{ env.ARTIFACT_NAME }}
 
-  # releaseジョブ：GitHubリリースを作成
   release:
     if: |
       startsWith(github.ref, 'refs/tags/v') ||

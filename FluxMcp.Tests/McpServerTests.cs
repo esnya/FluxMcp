@@ -51,6 +51,8 @@ public sealed class McpServerTests
 
         await client.DisposeAsync().ConfigureAwait(false);
 
+#if DEBUG
         FluxMcpMod.BeforeHotReload();
+#endif
     }
 }
