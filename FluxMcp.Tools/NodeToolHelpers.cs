@@ -172,25 +172,39 @@ public static class NodeToolHelpers
 
     internal static int LevenshteinDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
     {
-        var d = new int[a.Length + 1][];
-        for (int i = 0; i <= a.Length; i++)
+        if (a.IsEmpty)
         {
-            d[i] = new int[b.Length + 1];
-            d[i][0] = i;
+            return b.Length;
         }
+
+        if (b.IsEmpty)
+        {
+            return a.Length;
+        }
+
+        Span<int> previous = new int[b.Length + 1];
+        Span<int> current = new int[b.Length + 1];
+
         for (int j = 0; j <= b.Length; j++)
         {
-            d[0][j] = j;
+            previous[j] = j;
         }
+
         for (int i = 1; i <= a.Length; i++)
         {
+            current[0] = i;
             for (int j = 1; j <= b.Length; j++)
             {
                 var cost = a[i - 1] == b[j - 1] ? 0 : 1;
-                d[i][j] = Math.Min(Math.Min(d[i - 1][j] + 1, d[i][j - 1] + 1), d[i - 1][j - 1] + cost);
+                current[j] = Math.Min(
+                    Math.Min(previous[j] + 1, current[j - 1] + 1),
+                    previous[j - 1] + cost);
             }
+
+            (previous, current) = (current, previous);
         }
-        return d[a.Length][b.Length];
+
+        return previous[b.Length];
     }
 
 
