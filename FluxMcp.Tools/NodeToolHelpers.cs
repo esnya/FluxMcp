@@ -18,8 +18,9 @@ public static class NodeToolHelpers
     internal static World FocusedWorld => Engine.Current.WorldManager.FocusedWorld;
     internal static TypeManager Types => FocusedWorld.Types;
     internal static Slot LocalUserSpace => FocusedWorld.LocalUserSpace;
+    internal const string WorkspaceTag = "__FLUXMCP_WORKSPACE__";
     internal static Slot WorkspaceSlot => FocusedWorld.RootSlot
-        .GetChildrenWithTag("__FLUXMCP_WORKSPACE__")
+        .GetChildrenWithTag(WorkspaceTag)
         .Append(LocalUserSpace)
         .First();
 
