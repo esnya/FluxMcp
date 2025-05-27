@@ -113,7 +113,7 @@ internal sealed class DuplexPipe : IDuplexPipe
                         var taskId = Guid.NewGuid();
                         var task = Task.Run(() => HandleContextAsync(ctx, cancellationToken), cancellationToken);
                         _activeTasks.TryAdd(taskId, task);
-                        
+
                         // Clean up completed tasks to prevent memory buildup
                         _ = task.ContinueWith(_ => CleanupCompletedTask(taskId), TaskScheduler.Default);
                     }
@@ -121,7 +121,7 @@ internal sealed class DuplexPipe : IDuplexPipe
                 finally
                 {
                     await server.ConfigureAwait(false);
-                    
+
                     // Wait for all active tasks to complete
                     await WaitForActiveTasksAsync().ConfigureAwait(false);
                 }
@@ -250,10 +250,10 @@ internal sealed class DuplexPipe : IDuplexPipe
             {
                 _logger.LogDebug("Disposing MCP HTTP server...");
                 Stop();
-                
+
                 // Wait for all active tasks to complete before disposing
                 await WaitForActiveTasksAsync().ConfigureAwait(false);
-                
+
                 await _mcpServer.DisposeAsync().ConfigureAwait(false);
                 _listener.Close();
             }
