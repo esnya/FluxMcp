@@ -221,17 +221,28 @@ internal sealed class DuplexPipe : IDuplexPipe
                 {
                     _logger.LogWarning(ex, "Error closing response");
                 }
+                catch (ObjectDisposedException ex)
+                {
+                    _logger.LogWarning(ex, "Response already disposed");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "{Type}: {Message}\n\t{Stack}", ex.GetType(), ex.Message, ex.StackTrace);
                 var response = ctx.Response;
-                if (response.OutputStream.CanWrite)
+                try
                 {
-                    response.StatusCode = 500;
-                    var bytes = Encoding.UTF8.GetBytes(ex.Message);
-                    await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
-                    response.Close();
+                    if (response.OutputStream.CanWrite)
+                    {
+                        response.StatusCode = 500;
+                        var bytes = Encoding.UTF8.GetBytes(ex.Message);
+                        await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
+                        response.Close();
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Listener was stopped before response could be written
                 }
 
                 throw;

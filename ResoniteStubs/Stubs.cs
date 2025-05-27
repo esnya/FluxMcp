@@ -24,12 +24,20 @@ namespace ResoniteModLoader
 
     public class ModConfiguration
     {
-        public T? GetValue<T>(ModConfigurationKey<T> key) => default;
+        public T? GetValue<T>(ModConfigurationKey<T> key)
+            => key?.ComputeDefault != null ? key.ComputeDefault() : default;
     }
 
     public class ModConfigurationKey<T>
     {
-        public ModConfigurationKey(string name, System.Func<T>? computeDefault = null) { }
+        public ModConfigurationKey(string name, System.Func<T>? computeDefault = null)
+        {
+            Name = name;
+            ComputeDefault = computeDefault;
+        }
+
+        public string Name { get; }
+        internal System.Func<T>? ComputeDefault { get; }
         public event System.Action<T?>? OnChanged;
     }
 
@@ -79,7 +87,7 @@ namespace FrooxEngine
     {
         private int _id;
         public RefID(int id) { _id = id; }
-        public override string ToString() => $"ID{_id}";
+        public override string ToString() => $"ID{_id:X}";
         public static bool TryParse(string? s, out RefID id)
         {
             if (s != null && s.StartsWith("ID") && int.TryParse(s.Substring(2), out var v))

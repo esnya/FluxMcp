@@ -104,11 +104,18 @@ public partial class FluxMcpMod : ResoniteMod
 
         try
         {
-            _httpServer.Stop();
             _cts?.Cancel();
-            _serverTask?.GetAwaiter().GetResult();
+            try
+            {
+                _httpServer.Stop();
+                _serverTask?.GetAwaiter().GetResult();
+                _httpServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Server already disposed
+            }
             _cts?.Dispose();
-            _httpServer.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
         finally
         {
