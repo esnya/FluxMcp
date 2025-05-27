@@ -1,11 +1,17 @@
 <Project>
   <!-- Basic build settings -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <DelaySign>False</DelaySign>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <!-- Code quality and analysis settings -->
@@ -63,25 +69,26 @@
   <!-- Common package references -->
   <ItemGroup>
     <!-- Code analysis -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
     <!-- Runtime -->
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
-    <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="ModelContextProtocol" />
   </ItemGroup>
 
   <!-- Test-specific packages -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest" Version="3.6.4" />
-    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
 </Project>

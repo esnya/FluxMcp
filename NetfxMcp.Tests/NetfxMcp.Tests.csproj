@@ -1,12 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Net.ServerSentEvents" Version="10.0.0-preview.3.25171.5" />
+    <PackageReference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
   <Import Project="..\NetfxMcp\NetfxMcp.projitems" Label="Shared" />
 </Project>

@@ -106,8 +106,15 @@ public sealed class McpFakeToolTests : IDisposable
         if (_serverCts != null)
         {
             _serverCts.Cancel();
-            _server.Stop();
-            await _serverTask.ConfigureAwait(false);
+            try
+            {
+                _server.Stop();
+                await _serverTask.ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Server already disposed
+            }
         }
     }
 

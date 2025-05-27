@@ -11,12 +11,9 @@
 
   <ItemGroup>
     <None Include=".github\**\" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
-    <PackageReference Include="System.IO.Pipelines" Version="9.0.0" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
-    <PackageReference Include="System.Threading.Channels" Version="9.0.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
-
+    <PackageReference Include="System.IO.Pipelines" />
+    <PackageReference Include="System.Threading.Channels" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <Import Project="..\ResoniteMod.props" />
