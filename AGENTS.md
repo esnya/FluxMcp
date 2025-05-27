@@ -15,3 +15,8 @@
 - **MCP Schema**: Only the `Description` attribute content is reflected in the MCP tool schema that AI agents see.
 - **XML Documentation**: XML doc comments (`/// <summary>`) are for C# IntelliSense and developer documentation only.
 - **Best Practice**: Use both - `Description` attribute for AI agents, XML docs for developers.
+
+
+## Planned .NET Upgrade
+
+FluxMcp currently targets .NET Framework 4.7.2. A move to .NET 9 is planned once the runtime stabilizes. Dependencies and build steps will change accordingly, so keep an eye on this repository for updated instructions.
