@@ -402,3 +402,6 @@ dotnet_diagnostic.CS8604.severity = warning
 dotnet_diagnostic.CS8618.severity = warning
 dotnet_diagnostic.CS8619.severity = warning
 dotnet_diagnostic.CS8625.severity = warning
+
+# Suppress CA1848 for .NET Framework projects where LoggerMessage is not available
+dotnet_diagnostic.CA1848.severity = none
