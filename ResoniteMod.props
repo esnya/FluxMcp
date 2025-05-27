@@ -5,8 +5,8 @@
     <ResoniteAssemblyPrivate Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">False</ResoniteAssemblyPrivate>
   </PropertyGroup>
 
-  <!-- Reference real Resonite assemblies when available -->
-  <ItemGroup Condition="'$(ResoniteAssembliesAvailable)' == 'true' AND (Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll') OR Exists('$(ResonitePath)Resonite_Data/Managed/FrooxEngine.dll'))">
+  <!-- Reference real Resonite assemblies for normal Debug/Release builds -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' OR '$(Configuration)' == 'Release'">
     <Reference Include="FrooxEngine">
       <HintPath>$(ResonitePath)Resonite_Data/Managed/FrooxEngine.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
@@ -25,25 +25,8 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Check if real Resonite assemblies are available -->
-  <PropertyGroup>
-    <!-- Default ResonitePath for CI builds - check multiple possible locations with cross-platform path handling -->
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)/Resonite/Resonite_Data/Managed/FrooxEngine.dll')">$(MSBuildProjectDirectory)/Resonite/</ResonitePath>
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)\Resonite\Resonite_Data\Managed\FrooxEngine.dll')">$(MSBuildProjectDirectory)\Resonite\</ResonitePath>
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)/Resonite/Managed/FrooxEngine.dll')">$(MSBuildProjectDirectory)/Resonite/</ResonitePath>
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)\Resonite\Managed\FrooxEngine.dll')">$(MSBuildProjectDirectory)\Resonite\</ResonitePath>
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)/Resonite/FrooxEngine.dll')">$(MSBuildProjectDirectory)/Resonite/</ResonitePath>
-    <ResonitePath Condition="'$(ResonitePath)' == '' AND Exists('$(MSBuildProjectDirectory)\Resonite\FrooxEngine.dll')">$(MSBuildProjectDirectory)\Resonite\</ResonitePath>
-    <ResoniteAssembliesAvailable Condition="'$(ResonitePath)' != '' AND Exists('$(ResonitePath)Resonite_Data/Managed/FrooxEngine.dll')">true</ResoniteAssembliesAvailable>
-    <ResoniteAssembliesAvailable Condition="'$(ResonitePath)' != '' AND Exists('$(ResonitePath)Resonite_Data\Managed\FrooxEngine.dll')">true</ResoniteAssembliesAvailable>
-    <ResoniteAssembliesAvailable Condition="'$(ResonitePath)' != '' AND Exists('$(ResonitePath)Managed/FrooxEngine.dll')">true</ResoniteAssembliesAvailable>
-    <ResoniteAssembliesAvailable Condition="'$(ResonitePath)' != '' AND Exists('$(ResonitePath)Managed\FrooxEngine.dll')">true</ResoniteAssembliesAvailable>
-    <ResoniteAssembliesAvailable Condition="'$(ResonitePath)' != '' AND Exists('$(ResonitePath)FrooxEngine.dll')">true</ResoniteAssembliesAvailable>
-    <ResoniteAssembliesAvailable Condition="'$(ResoniteAssembliesAvailable)' == ''">false</ResoniteAssembliesAvailable>
-  </PropertyGroup>
-
-  <!-- Only include ResoniteStubs when real assemblies are NOT available -->
-  <ItemGroup Condition="'$(ResoniteAssembliesAvailable)' != 'true'">
+  <!-- Use ResoniteStubs for StubDebug/StubRelease builds -->
+  <ItemGroup Condition="'$(Configuration)' == 'StubDebug' OR '$(Configuration)' == 'StubRelease'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)ResoniteStubs\ResoniteStubs.csproj" ReferenceOutputAssembly="true" />
     <PackageReference Include="System.Net.ServerSentEvents"  />
   </ItemGroup>

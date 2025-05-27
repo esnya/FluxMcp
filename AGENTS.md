@@ -10,6 +10,19 @@
 - Avoid splitting property values containing paths with spaces across lines, as it can cause path resolution failures.
 - Use `.editorconfig` for configuring compiler warnings and code style settings across the entire solution.
 
+## Build Configurations
+
+FluxMcp uses separate build configurations for different environments:
+
+- **Debug/Release**: For local development with real Resonite assemblies installed
+- **StubDebug/StubRelease**: For CI environments without real Resonite assemblies
+  
+The solution automatically selects the appropriate assembly references based on the configuration:
+- Debug/Release configurations reference real Resonite assemblies when available
+- StubDebug/StubRelease configurations always use ResoniteStubs project for stub implementations
+
+This eliminates the need for complex conditional logic and makes builds predictable across different environments.
+
 ## MCP Tool Documentation
 
 - **MCP Schema**: Only the `Description` attribute content is reflected in the MCP tool schema that AI agents see.
