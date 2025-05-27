@@ -2,7 +2,9 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using System;
+using System.Collections.Concurrent;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -35,6 +37,7 @@ internal sealed class DuplexPipe : IDuplexPipe
         private readonly IMcpServer _mcpServer;
         private readonly HttpListener _listener = new HttpListener();
         private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<Guid, Task> _activeTasks = new ConcurrentDictionary<Guid, Task>();
 
         /// <summary>
         /// Gets a value indicating whether the HTTP server is currently running.
@@ -107,12 +110,20 @@ internal sealed class DuplexPipe : IDuplexPipe
                         }
 
                         _logger.LogDebug("Received request: {Method} {Url}", ctx.Request.HttpMethod, ctx.Request.Url);
-                        await HandleContextAsync(ctx, cancellationToken).ConfigureAwait(false);
+                        var taskId = Guid.NewGuid();
+                        var task = Task.Run(() => HandleContextAsync(ctx, cancellationToken), cancellationToken);
+                        _activeTasks.TryAdd(taskId, task);
+                        
+                        // Clean up completed tasks to prevent memory buildup
+                        _ = task.ContinueWith(_ => CleanupCompletedTask(taskId), TaskScheduler.Default);
                     }
                 }
                 finally
                 {
                     await server.ConfigureAwait(false);
+                    
+                    // Wait for all active tasks to complete
+                    await WaitForActiveTasksAsync().ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -133,6 +144,41 @@ internal sealed class DuplexPipe : IDuplexPipe
         {
             _logger.LogInformation("Stopping MCP HTTP server...");
             _listener.Stop();
+        }
+
+        /// <summary>
+        /// Waits for all active request handling tasks to complete.
+        /// </summary>
+        /// <returns>A task representing the completion of all active tasks.</returns>
+        private async Task WaitForActiveTasksAsync()
+        {
+            var tasks = _activeTasks.Values.ToArray();
+            if (tasks.Length > 0)
+            {
+                _logger.LogDebug("Waiting for {Count} active tasks to complete", tasks.Length);
+                try
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                }
+                catch (AggregateException ex)
+                {
+                    _logger.LogWarning(ex, "One or more request handling tasks failed");
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogDebug("Request handling tasks were cancelled");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes a completed task from the active tasks collection to prevent memory buildup.
+        /// </summary>
+        /// <param name="taskId">The ID of the task to remove.</param>
+        private void CleanupCompletedTask(Guid taskId)
+        {
+            _activeTasks.TryRemove(taskId, out _);
+            _logger.LogDebug("Cleaned up completed task {TaskId}", taskId);
         }
 
         private async Task HandleContextAsync(HttpListenerContext ctx, CancellationToken cancellationToken = default)
@@ -204,6 +250,10 @@ internal sealed class DuplexPipe : IDuplexPipe
             {
                 _logger.LogDebug("Disposing MCP HTTP server...");
                 Stop();
+                
+                // Wait for all active tasks to complete before disposing
+                await WaitForActiveTasksAsync().ConfigureAwait(false);
+                
                 await _mcpServer.DisposeAsync().ConfigureAwait(false);
                 _listener.Close();
             }

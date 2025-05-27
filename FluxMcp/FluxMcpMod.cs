@@ -104,6 +104,7 @@ public partial class FluxMcpMod : ResoniteMod
 
         try
         {
+            _httpServer.Stop();
             _cts?.Cancel();
             _serverTask?.GetAwaiter().GetResult();
             _cts?.Dispose();
