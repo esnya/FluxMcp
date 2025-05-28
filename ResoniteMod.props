@@ -15,6 +15,10 @@
       <HintPath>$(ResonitePath)Resonite_Data/Managed/Elements.Core.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
+    <Reference Include="mscorlib">
+      <HintPath>$(ResonitePath)Resonite_Data/Managed/mscorlib.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
     <Reference Include="ResoniteModLoader">
       <HintPath>$(ResonitePath)Libraries/ResoniteModLoader.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
@@ -33,7 +37,9 @@
 
   <PropertyGroup>
     <DllsToCopy Condition="'$(DllsToCopy)'==''">
-      ModelContextProtocol.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll</DllsToCopy>
+      ModelContextProtocol.dll;
+      Microsoft.Extensions.AI.Abstractions.dll
+    </DllsToCopy>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent"
