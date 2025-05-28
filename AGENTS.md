@@ -1,36 +1,34 @@
 # Development Notes
 
-- Keep source code and comments in English.
-- Remove unnecessary comments when editing files.
-- Manage the lifecycle of servers carefully:
-- Stop the SSE server when the engine shuts down and clear static references.
-- Use Conventional Commit messages with an emoji.
-- Always run `dotnet test FluxMcp.sln` before committing.
-- Build and test commands run offline once packages are restored. Restoring new packages requires network access.
-- Avoid splitting property values containing paths with spaces across lines, as it can cause path resolution failures.
-- Use `.editorconfig` for configuring compiler warnings and code style settings across the entire solution.
-- Avoid duplicating logic. Centralize reusable code, but don't abstract single-use implementations.
+- Code and comments in English
+- Remove unnecessary comments
+- Manage server lifecycle (stop SSE server on shutdown; clear static references)
+- Use Conventional Commits with emojis (standard gitmoji or custom)
+  - Format: `category(optional scope): EMOJI description in EN`
+- Run `dotnet test FluxMcp.sln` before committing
+- Restore packages once; avoid splitting path-containing properties
+- Configure style and warnings via `.editorconfig`
+- Centralize reusable logic; avoid premature abstraction
 
 ## Build Configurations
 
-FluxMcp uses separate build configurations for different environments:
+- Debug/Release: real Resonite assemblies
+- StubDebug/StubRelease: ResoniteStubs for CI
+- References auto-selected by configuration
 
-- **Debug/Release**: For local development with real Resonite assemblies installed
-- **StubDebug/StubRelease**: For CI environments without real Resonite assemblies
+## NuGet Dependency Conflict Resolution
 
-The solution automatically selects the appropriate assembly references based on the configuration:
-- Debug/Release configurations reference real Resonite assemblies when available
-- StubDebug/StubRelease configurations always use ResoniteStubs project for stub implementations
+1. Prioritize Resonite assemblies over NuGet
+2. Exclude conflicting NuGet packages (`ExcludeAssets="all" PrivateAssets="all"`)
+3. Reference Resonite's Managed assemblies directly
+4. Use NuGet only for assemblies absent in Resonite
 
-This eliminates the need for complex conditional logic and makes builds predictable across different environments.
+## Documentation Practices
 
-## MCP Tool Documentation
+- MCP Schema: AI-visible via `Description` attribute
+- Developer docs: use XML comments (`/// <summary>`)
+- Combine both for clarity
 
-- **MCP Schema**: Only the `Description` attribute content is reflected in the MCP tool schema that AI agents see.
-- **XML Documentation**: XML doc comments (`/// <summary>`) are for C# IntelliSense and developer documentation only.
-- **Best Practice**: Use both - `Description` attribute for AI agents, XML docs for developers.
+## Planned Upgrade
 
-
-## Planned .NET Upgrade
-
-FluxMcp currently targets .NET Framework 4.7.2. A move to .NET 9 is planned once the runtime stabilizes. Dependencies and build steps will change accordingly, so keep an eye on this repository for updated instructions.
+- Currently .NET Framework 4.7.2; migrate to .NET 9 when stable
