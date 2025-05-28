@@ -38,7 +38,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.x
+          dotnet-version: '9.0'
 
       - name: Restore NuGet Package Cache
         uses: actions/cache/restore@v4
@@ -51,22 +51,11 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Build Stubs
-        run: dotnet build ResoniteStubs/ResoniteStubs.csproj --configuration StubRelease
-
       - name: Build FluxMcp
-        run: dotnet build --configuration StubRelease
+        run: dotnet build --configuration StubRelease --disable-parallel
 
       - name: Run FluxMcp.Tests
-        run: dotnet test --configuration StubRelease --logger trx --results-directory TestResults
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: TestResults/**/*.trx
-          retention-days: 7
+        run: dotnet test --configuration StubRelease
 
       - name: Save NuGet Package Cache
         if: ${{ github.event_name != 'pull_request' }}
