@@ -38,6 +38,7 @@ namespace ResoniteModLoader
 
         public string Name { get; }
         internal System.Func<T>? ComputeDefault { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1003:Use generic EventHandler instances")]
         public event System.Action<T?>? OnChanged;
     }
 
@@ -56,21 +57,58 @@ namespace ResoniteHotReloadLib
 
 namespace Elements.Core
 {
-    public struct float3
+    public readonly struct float3 : System.IEquatable<float3>
     {
-        public float x;
-        public float y;
-        public float z;
-        public float3(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
+        public float x { get; init; }
+        public float y { get; init; }
+        public float z { get; init; }
+
+        public float3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public bool Equals(float3 other) => x.Equals(other.x) && y.Equals(other.y) && z.Equals(other.z);
+        public override bool Equals(object? obj) => obj is float3 other && Equals(other);
+        public override int GetHashCode() => System.HashCode.Combine(x, y, z);
+        public static bool operator ==(float3 left, float3 right) => left.Equals(right);
+        public static bool operator !=(float3 left, float3 right) => !left.Equals(right);
     }
 
-    public struct color { public float r; public float g; public float b; public float a; }
-
-    public struct colorX
+    #pragma warning disable CS8981 // Name only contains lower-cased ascii characters
+    public readonly struct color : System.IEquatable<color>
     {
-        public color Color;
-        public string profile;
+        public float r { get; init; }
+        public float g { get; init; }
+        public float b { get; init; }
+        public float a { get; init; }
+
+        public bool Equals(color other) => r.Equals(other.r) && g.Equals(other.g) && b.Equals(other.b) && a.Equals(other.a);
+        public override bool Equals(object? obj) => obj is color other && Equals(other);
+        public override int GetHashCode() => System.HashCode.Combine(r, g, b, a);
+        public static bool operator ==(color left, color right) => left.Equals(right);
+        public static bool operator !=(color left, color right) => !left.Equals(right);
+    }
+    #pragma warning restore CS8981
+
+    public readonly struct colorX : System.IEquatable<colorX>
+    {
+        public color Color { get; init; }
+        public string profile { get; init; }
+
+        public static colorX Fromcolor(color c) => new colorX { Color = c, profile = string.Empty };
         public static explicit operator colorX(color c) => new colorX { Color = c, profile = string.Empty };
+
+        public override bool Equals(object? obj) => obj is colorX other && Equals(other);
+
+        public bool Equals(colorX other) => Color.Equals(other.Color) && profile == other.profile;
+
+        public override int GetHashCode() => System.HashCode.Combine(Color, profile);
+
+        public static bool operator ==(colorX left, colorX right) => left.Equals(right);
+        public static bool operator !=(colorX left, colorX right) => !left.Equals(right);
     }
 }
 
@@ -78,19 +116,21 @@ namespace FrooxEngine
 {
     using Elements.Core;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces")]
     public interface ISyncMember { }
     public class DataTreeNode { }
     public class LoadControl { }
     public class SaveControl { }
 
-    public struct RefID
+    public readonly struct RefID : System.IEquatable<RefID>
     {
-        private int _id;
+        private readonly int _id;
         public RefID(int id) { _id = id; }
         public override string ToString() => $"ID{_id:X}";
         public static bool TryParse(string? s, out RefID id)
         {
-            if (s != null && s.StartsWith("ID") && int.TryParse(s.Substring(2), out var v))
+            if (s != null && s.StartsWith("ID", System.StringComparison.Ordinal) &&
+                int.TryParse(System.MemoryExtensions.AsSpan(s, 2), out var v))
             {
                 id = new RefID(v);
                 return true;
@@ -98,6 +138,12 @@ namespace FrooxEngine
             id = default;
             return false;
         }
+
+        public bool Equals(RefID other) => _id == other._id;
+        public override bool Equals(object? obj) => obj is RefID other && Equals(other);
+        public override int GetHashCode() => _id;
+        public static bool operator ==(RefID left, RefID right) => left.Equals(right);
+        public static bool operator !=(RefID left, RefID right) => !left.Equals(right);
     }
 
     public interface IWorldElement
@@ -123,7 +169,11 @@ namespace FrooxEngine
         public string Tag { get; set; } = string.Empty;
         public Slot AddSlot(string name) => new Slot { Name = name, Parent = this, World = World };
         public System.Collections.Generic.IEnumerable<Slot> GetChildrenWithTag(string tag) => System.Linq.Enumerable.Empty<Slot>();
-        public void RunSynchronously(System.Action action) => action();
+        public void RunSynchronously(System.Action action)
+        {
+            if (action == null) throw new System.ArgumentNullException(nameof(action));
+            action();
+        }
         public void UnpackNodes() { }
         public object AttachComponent(System.Type type) => new object();
         public void Destroy() { }
@@ -132,7 +182,11 @@ namespace FrooxEngine
 
     public class TypeManager
     {
-        public string EncodeType(System.Type type) => type.FullName ?? string.Empty;
+        public string EncodeType(System.Type type)
+        {
+            if (type == null) throw new System.ArgumentNullException(nameof(type));
+            return type.FullName ?? string.Empty;
+        }
         public System.Type? DecodeType(string name) => System.Type.GetType(name);
     }
 
@@ -168,8 +222,8 @@ namespace FrooxEngine
     public class CategoryNode<T>
     {
         public string Name { get; set; } = string.Empty;
-        public System.Collections.Generic.List<CategoryNode<T>> Subcategories { get; } = new();
-        public System.Collections.Generic.List<T> Elements { get; } = new();
+        public System.Collections.ObjectModel.Collection<CategoryNode<T>> Subcategories { get; } = new();
+        public System.Collections.ObjectModel.Collection<T> Elements { get; } = new();
         public int ElementCount => Elements.Count;
     }
 }
@@ -178,6 +232,7 @@ namespace FrooxEngine.ProtoFlux
 {
     using FrooxEngine;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces")]
     public interface IInput
     {
         object? BoxedValue { get; set; }
