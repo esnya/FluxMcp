@@ -6,6 +6,7 @@
 - Use Conventional Commits with emojis (standard gitmoji or custom)
   - Format: `category(optional scope): EMOJI description in EN`
 - Run `dotnet test FluxMcp.sln` before committing
+  - Use `-c StubDebug` when Resonite assemblies are missing
 - Restore packages once; avoid splitting path-containing properties
 - Configure style and warnings via `.editorconfig`
 - Centralize reusable logic; avoid premature abstraction
@@ -15,6 +16,7 @@
 - Debug/Release: real Resonite assemblies
 - StubDebug/StubRelease: ResoniteStubs for CI
 - References auto-selected by configuration
+- Default to StubDebug/StubRelease when Resonite assemblies are absent
 
 ## NuGet Dependency Conflict Resolution
 
