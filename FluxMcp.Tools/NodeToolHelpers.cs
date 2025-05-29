@@ -28,15 +28,13 @@ public static class NodeToolHelpers
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Error should be sent to client")]
     internal static async Task<T> UpdateAction<T>(Slot slot, Func<T> action)
     {
-        T result = default!;
         var completionSource = new TaskCompletionSource<T>();
 
         slot.RunSynchronously(() =>
         {
             try
             {
-                result = action();
-                completionSource.SetResult(result);
+                completionSource.SetResult(action());
             }
             catch (Exception ex)
             {
