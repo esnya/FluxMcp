@@ -86,11 +86,6 @@ jobs:
           Expand-Archive -Path ${{ env.RESONITE_PATH }}/rml_libs/HotReloadLib.3.0.0.RML.zip -DestinationPath ${{ env.RESONITE_PATH }}/rml_libs/ -Force
           Remove-Item -Path ${{ env.RESONITE_PATH }}/rml_libs/HotReloadLib.3.0.0.RML.zip
 
-      - name: Clear NuGet caches
-        shell: pwsh
-        run: |
-          dotnet nuget locals all --clear
-
       - name: Restore the application
         shell: pwsh
         run: dotnet restore FluxMcp/FluxMcp.csproj --disable-parallel -tl:off
