@@ -42,6 +42,10 @@ public static class NodeConnectionTools
         GlobalRefList
     }
 
+    private const string ConnectionTypeList =
+        "Input, Output, Impulse, Operation, Reference, InputList, OutputList, " +
+        "ImpulseList, OperationList, GlobalRef, GlobalRefList";
+
     /// <summary>
     /// Attempts to connect a node's connection by type and index to a target node.
     /// </summary>
@@ -51,7 +55,7 @@ public static class NodeConnectionTools
     /// <param name="targetNodeRefId">The reference ID of the target node.</param>
     /// <param name="targetIndex">The connection index on the target node (default: 0).</param>
     /// <returns>A task representing the asynchronous operation result.</returns>
-    [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node. connectionType values: Input, Output, Impulse, Operation, Reference, InputList, OutputList, ImpulseList, OperationList, GlobalRef, GlobalRefList")]
+    [McpServerTool(Name = "tryConnect"), Description("Attempts to connect a node's connection by type and index to a target node. connectionType values: " + ConnectionTypeList)]
     public static Task<object> TryConnect(string nodeRefId, string connectionType, int index, string targetNodeRefId, int targetIndex = 0)
     {
         return NodeToolHelpers.HandleAsync(async () =>
@@ -85,7 +89,7 @@ public static class NodeConnectionTools
     /// <param name="connectionType">The type of connection to retrieve.</param>
     /// <param name="index">The connection index.</param>
     /// <returns>The connection element or list.</returns>
-    [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index. connectionType values: Input, Output, Impulse, Operation, Reference, InputList, OutputList, ImpulseList, OperationList, GlobalRef, GlobalRefList")]
+    [McpServerTool(Name = "getNodeConnection"), Description("Gets specified node connection element or list by type and index. connectionType values: " + ConnectionTypeList)]
     public static object GetNodeConnection(string nodeRefId, string connectionType, int index)
     {
         return NodeToolHelpers.Handle<object>(() =>
