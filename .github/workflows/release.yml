@@ -31,22 +31,26 @@ jobs:
       - name: Get version
         id: version
         run: |
-          $VERSION = (Select-String -Path "Directory.Build.props" -Pattern "<Version>([^<]+)</Version>").Matches[0].Groups[1].Value
-          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $env:GITHUB_OUTPUT
+          VERSION=$(awk 'match($0, /<Version>([^<]+)<\/Version>/, a) { print a[1]; exit }' Directory.Build.props)
+          
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          
 
       - name: Check if release needed
         id: check
         run: |
           git fetch --tags
-          $tagExists = git tag -l "${{ steps.version.outputs.tag }}"
-          if ($tagExists) {
-            echo "should-release=false" >> $env:GITHUB_OUTPUT
-            Write-Host "Tag ${{ steps.version.outputs.tag }} already exists"
-          } else {
-            echo "should-release=true" >> $env:GITHUB_OUTPUT
-            Write-Host "New release needed: ${{ steps.version.outputs.tag }}"
-          }
+          
+          tag='${{ steps.version.outputs.tag }}'
+          
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "should-release=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $tag already exists"
+          else
+            echo "should-release=true" >> "$GITHUB_OUTPUT"
+            echo "New release needed: $tag"
+          fi
       
       - name: Setup build environment
         id: build-env
