@@ -2,9 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFramework>net472</TargetFramework>
-  </PropertyGroup>
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -46,7 +43,7 @@
 
   <!-- Package and license information -->
   <PropertyGroup>
-    <Version>0.1.1</Version>
+    <Version>1.0.0-alpha.1</Version>
     <Authors>esnya</Authors>
     <Copyright>Copyright (c) 2025 $(Authors)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
