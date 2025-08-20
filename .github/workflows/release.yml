@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
@@ -47,44 +47,13 @@ jobs:
             echo "should-release=true" >> $env:GITHUB_OUTPUT
             Write-Host "New release needed: ${{ steps.version.outputs.tag }}"
           }
-
-      - name: Setup .NET Framework (msbuild)
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+      
+      - name: Setup build environment
+        id: build-env
+        uses: resonite-modding-group/setup-resonite-env-action@v0.1.0
         with:
-          dotnet-version: '9.0'
-
-      - name: Setup SteamCMD
-        uses: CyberAndrii/setup-steamcmd@v1.2.0
-
-      - name: Cache app
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.RESONITE_PATH }}
-          key: rml-mod-${{ env.MAIN_PROJECT }}-${{ runner.os }}
-
-      - name: Update app
-        shell: pwsh
-        run: steamcmd +force_install_dir ${{ env.RESONITE_PATH }} +login ${{ secrets.STEAMLOGIN }} +app_update 2519830 validate +quit
-
-      - name: Prepare directories
-        shell: pwsh
-        run: |
-          mkdir -p ${{ env.RESONITE_PATH }}/Libraries/
-          mkdir -p ${{ env.RESONITE_PATH }}/rml_libs/
-        continue-on-error: true
-
-      - name: Install ResoniteModLoader
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri https://github.com/resonite-modding-group/ResoniteModLoader/releases/latest/download/ResoniteModLoader.dll -OutFile ${{ env.RESONITE_PATH }}/Libraries/ResoniteModLoader.dll
-          Invoke-WebRequest -Uri https://github.com/resonite-modding-group/ResoniteModLoader/releases/latest/download/0Harmony.dll -OutFile ${{ env.RESONITE_PATH }}/rml_libs/0Harmony.dll
-
-          Invoke-WebRequest -Uri https://github.com/Nytra/ResoniteHotReloadLib/releases/download/v3.0.0/HotReloadLib.3.0.0.RML.zip -OutFile ${{ env.RESONITE_PATH }}/rml_libs/HotReloadLib.3.0.0.RML.zip
-          Expand-Archive -Path ${{ env.RESONITE_PATH }}/rml_libs/HotReloadLib.3.0.0.RML.zip -DestinationPath ${{ env.RESONITE_PATH }}/rml_libs/ -Force
-          Remove-Item -Path ${{ env.RESONITE_PATH }}/rml_libs/HotReloadLib.3.0.0.RML.zip
+          steam-user: ${{ secrets.STEAMUSER }}
+          steam-password: ${{ secrets.STEAMPASS }}
 
       - name: Restore the application
         shell: pwsh
@@ -101,24 +70,13 @@ jobs:
       - name: Prepare rml_libs directory structure
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/release/rml_libs"
-
-          # Copy NuGet dependencies based on DllsToCopy property
-          $dllsToCopy = @("ModelContextProtocol.dll", "Microsoft.Extensions.AI.Abstractions.dll")
-          foreach ($dll in $dllsToCopy) {
-            $sourcePath = "${{ github.workspace }}/bin/Release/$dll"
-            if (Test-Path $sourcePath) {
-              Copy-Item $sourcePath -Destination "${{ github.workspace }}/release/rml_libs/" -Force
-              Write-Host "Copied $dll to rml_libs"
-            } else {
-              Write-Warning "$dll not found at $sourcePath"
-            }
-          }
+          mkdir -P "${{ github.workspace }}/release/rml_libs"
+          cp "${{ github.workspace }}/bin/Release/ModelContextProtocol.dll" "${{ github.workspace }}/bin/Release/ModelContextProtocol.dll" "${{ github.workspace }}/release/rml_libs"
 
       - name: Create rml_libs.zip
         shell: pwsh
         run: |
-          Compress-Archive -Path "${{ github.workspace }}/release/rml_libs" -DestinationPath "${{ github.workspace }}/release/rml_libs.zip"
+          zip -r "${{ github.workspace }}/release/rml_libs" "${{ github.workspace }}/release/rml_libs.zip"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
