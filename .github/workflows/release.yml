@@ -9,7 +9,6 @@ on:
 env:
   MAIN_PROJECT: FluxMcp
   ARTIFACT_NAME: FluxMcp.dll
-  RESONITE_PATH: ${{ github.workspace }}/../Resonite
 
 permissions:
   contents: write
@@ -59,34 +58,64 @@ jobs:
           steam-user: ${{ secrets.STEAMUSER }}
           steam-password: ${{ secrets.STEAMPASS }}
 
+      - name: Install ResoniteModLoader and Harmony
+        run: |
+          set -euo pipefail
+          LIBS_PATH="${{ steps.build-env.outputs.libraries-path }}"
+          RESONITE_DIR="$(dirname "${LIBS_PATH}")"
+          echo "Resonite Libraries: ${LIBS_PATH}"
+          echo "Resonite Dir: ${RESONITE_DIR}"
+          mkdir -p "${LIBS_PATH}" "${RESONITE_DIR}/rml_libs"
+          curl -fsSL -o "${LIBS_PATH}/ResoniteModLoader.dll" \
+            https://github.com/resonite-modding-group/ResoniteModLoader/releases/latest/download/ResoniteModLoader.dll
+          if ! curl -fsSL -o "${RESONITE_DIR}/rml_libs/0Harmony.dll" \
+            https://github.com/resonite-modding-group/ResoniteModLoader/releases/latest/download/0Harmony.dll; then
+            curl -fsSL -o "${RESONITE_DIR}/0Harmony.dll" \
+              https://github.com/resonite-modding-group/ResoniteModLoader/releases/latest/download/0Harmony.dll
+          fi
+
       - name: Restore the application
-        shell: pwsh
-        run: dotnet restore FluxMcp/FluxMcp.csproj --disable-parallel -tl:off
+        run: |
+          RESONITE_DIR="$(dirname "${{ steps.build-env.outputs.libraries-path }}")"
+          dotnet restore FluxMcp/FluxMcp.csproj --disable-parallel -tl:off \
+            -p:ResonitePath="${RESONITE_DIR}/"
 
       - name: List installed packages
-        shell: pwsh
         run: dotnet list FluxMcp/FluxMcp.csproj package --include-transitive
 
       - name: Build the application
-        shell: pwsh
-        run: dotnet build FluxMcp/FluxMcp.csproj --disable-parallel -tl:off --configuration=Release --no-restore --output ${{ github.workspace }}/bin/Release -v:d
+        run: |
+          RESONITE_DIR="$(dirname "${{ steps.build-env.outputs.libraries-path }}")"
+          dotnet build FluxMcp/FluxMcp.csproj \
+            --configuration Release \
+            --no-restore \
+            --disable-parallel \
+            -p:ResonitePath="${RESONITE_DIR}/" \
+            -v:d
 
       - name: Prepare rml_libs directory structure
-        shell: pwsh
         run: |
-          mkdir -P "${{ github.workspace }}/release/rml_libs"
-          cp "${{ github.workspace }}/bin/Release/ModelContextProtocol.dll" "${{ github.workspace }}/bin/Release/ModelContextProtocol.dll" "${{ github.workspace }}/release/rml_libs"
+          set -euo pipefail
+          RELEASE_DIR="${{ github.workspace }}/release"
+          OUT_DIR="${{ github.workspace }}/FluxMcp/bin/Release/net9.0"
+          mkdir -p "${RELEASE_DIR}/rml_libs"
+          # Copy required libs if present
+          for f in ModelContextProtocol.dll Microsoft.Extensions.AI.Abstractions.dll; do
+            if [ -f "${OUT_DIR}/${f}" ]; then
+              cp "${OUT_DIR}/${f}" "${RELEASE_DIR}/rml_libs/"
+            fi
+          done
 
       - name: Create rml_libs.zip
-        shell: pwsh
         run: |
-          zip -r "${{ github.workspace }}/release/rml_libs" "${{ github.workspace }}/release/rml_libs.zip"
+          cd "${{ github.workspace }}/release"
+          zip -r "rml_libs.zip" "rml_libs"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ github.workspace }}/bin/Release/${{ env.ARTIFACT_NAME }}
+          path: ${{ github.workspace }}/FluxMcp/bin/Release/net9.0/${{ env.ARTIFACT_NAME }}
 
       - name: Upload rml_libs artifact
         uses: actions/upload-artifact@v4

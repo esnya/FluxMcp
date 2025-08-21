@@ -60,10 +60,19 @@
 
   <!-- Resonite environment configuration -->
   <PropertyGroup Condition="'$(ResonitePath)'==''">
-    <ResonitePath Condition="Exists('$(MSBuildThisFileDirectory)Resonite/')">$(MSBuildThisFileDirectory)Resonite/</ResonitePath>
-    <ResonitePath Condition="Exists('$(MSBuildThisFileDirectory)../Resonite/')">$(MSBuildThisFileDirectory)../Resonite/</ResonitePath>
-    <ResonitePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</ResonitePath>
-    <ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
+    <ResonitePath Condition="Exists('$(MSBuildThisFileDirectory)Resonite/')">
+      $(MSBuildThisFileDirectory)Resonite/</ResonitePath>
+    <ResonitePath Condition="Exists('$(MSBuildThisFileDirectory)../Resonite/')">
+      $(MSBuildThisFileDirectory)../Resonite/</ResonitePath>
+    <!-- Windows (use forward slashes for cross-OS friendly paths) -->
+    <ResonitePath Condition="Exists('C:/Program Files (x86)/Steam/steamapps/common/Resonite/')">C:/Program
+      Files (x86)/Steam/steamapps/common/Resonite/</ResonitePath>
+    <!-- Linux (Steam under ~/.steam) -->
+    <ResonitePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">
+      $(HOME)/.steam/steam/steamapps/common/Resonite/</ResonitePath>
+    <!-- Linux (Steam under ~/.local/share/Steam) -->
+    <ResonitePath Condition="Exists('$(HOME)/.local/share/Steam/steamapps/common/Resonite/')">
+      $(HOME)/.local/share/Steam/steamapps/common/Resonite/</ResonitePath>
   </PropertyGroup>
 
   <!-- Resonite mod settings -->
