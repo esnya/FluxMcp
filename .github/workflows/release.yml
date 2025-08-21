@@ -27,6 +27,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
       - name: Get version
         id: version
         run: |
@@ -125,7 +130,7 @@ jobs:
 
       - name: Test
         run: |
-          dotnet test FluxMcp.Tests/FluxMcp.Tests.csproj --configuration Debug -tl:off
+          dotnet test FluxMcp.Tests/FluxMcp.Tests.csproj --configuration StubRelease -tl:off
 
 
   release:
