@@ -23,13 +23,22 @@
       <HintPath>$(ResonitePath)rml_libs/ResoniteHotReloadLib.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
+    <Reference Include="HarmonyLib">
+      <HintPath>$(ResonitePath)rml_libs/0Harmony.dll</HintPath>
+      <HintPath Condition="Exists('$(ResonitePath)0Harmony.dll')">$(ResonitePath)0Harmony.dll</HintPath>
+      <Private>$(ResoniteAssemblyPrivate)</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Use ResoniteStubs for StubDebug/StubRelease builds -->
   <ItemGroup Condition="'$(Configuration)' == 'StubDebug' OR '$(Configuration)' == 'StubRelease'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)ResoniteStubs\ResoniteStubs.csproj" ReferenceOutputAssembly="true" />
-    <PackageReference Include="System.Net.ServerSentEvents"  />
   </ItemGroup>
+
+  <!-- Do not copy to mods when building with stub configurations -->
+  <PropertyGroup Condition="'$(Configuration)' == 'StubDebug' OR '$(Configuration)' == 'StubRelease'">
+    <CopyToMods>false</CopyToMods>
+  </PropertyGroup>
 
   <PropertyGroup>
     <DllsToCopy Condition="'$(DllsToCopy)'==''">
@@ -48,10 +57,10 @@
 
   <Target Name="PostBuildHotReload" AfterTargets="PostBuildEvent"
     Condition="'$(CopyToMods)'=='true' and '$(Configuration)'=='Debug' and !$(MSBuildProjectName.EndsWith('.Tests'))">
-    <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods\HotReloadMods"
+    <Message Text="Attempting to copy $(TargetFileName) to $(ResonitePath)rml_mods/HotReloadMods"
       Importance="high" />
     <Copy SourceFiles="$(TargetDir)$(TargetFileName)"
-      DestinationFolder="$(ResonitePath)rml_mods\HotReloadMods" ContinueOnError="true" />
+      DestinationFolder="$(ResonitePath)rml_mods/HotReloadMods" ContinueOnError="true" />
   </Target>
 
   <Target Name="CopyNuGetLibs" AfterTargets="PostBuildEvent"
