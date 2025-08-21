@@ -8,15 +8,11 @@
   <!-- Reference real Resonite assemblies for normal Debug/Release builds -->
   <ItemGroup Condition="'$(Configuration)' == 'Debug' OR '$(Configuration)' == 'Release'">
     <Reference Include="FrooxEngine">
-      <HintPath>$(ResonitePath)Resonite_Data/Managed/FrooxEngine.dll</HintPath>
+      <HintPath>$(ResonitePath)FrooxEngine.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
     <Reference Include="Elements.Core">
-      <HintPath>$(ResonitePath)Resonite_Data/Managed/Elements.Core.dll</HintPath>
-      <Private>$(ResoniteAssemblyPrivate)</Private>
-    </Reference>
-    <Reference Include="mscorlib">
-      <HintPath>$(ResonitePath)Resonite_Data/Managed/mscorlib.dll</HintPath>
+      <HintPath>$(ResonitePath)Elements.Core.dll</HintPath>
       <Private>$(ResoniteAssemblyPrivate)</Private>
     </Reference>
     <Reference Include="ResoniteModLoader">
