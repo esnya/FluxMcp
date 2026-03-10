@@ -1,4 +1,9 @@
 # FluxMcp
+
+> [!WARNING]
+> **This repository is archived.**
+> The functionality provided by this mod is now available as an official Resonite feature via [ResoniteLink](https://wiki.resonite.com/ResoniteLink). Please use that instead.
+
 A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod for [Resonite](https://resonite.com/) that adds an MCP (Model Context Protocol) server to handle ProtoFlux for AI integration. 
 
 ## Installation
